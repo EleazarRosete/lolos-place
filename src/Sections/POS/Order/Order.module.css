@@ -1,0 +1,115 @@
+.orderContainer {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+  
+  .orderHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #fff;
+    padding: 0.5rem;
+    background-color: transparent;
+  }
+  
+  .orderDetails {
+    padding: 0.5rem;
+    background-color: transparent;
+  }
+  
+  .text, .text1, .quantityText {
+    font-weight: 200;
+    background-color: transparent;
+  }
+  
+ .text1{
+    padding-top: 2%;
+    font-weight: 300;
+ }
+
+  .quantityText {
+    padding: 0.2rem 2rem;
+  }
+  
+  .toggleButton, .incrementButton, .decrementButton {
+    background-color: #272626;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .removeButton {
+    background-color: #d9534f;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 0.35rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .remove {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .removeContent {
+    width: 30%;
+    height: 25%;
+    background-color: #0e0e0e;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+  }
+  
+  .quantityControlInModal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    background-color: transparent;
+    padding: 2rem;
+  }
+  
+  .buttonGroup {
+    position: relative;
+    top: -20%;
+    display: flex;
+    justify-content: center; /* Center-align the buttons */
+    gap: 1rem; /* Space between the buttons */
+    width: 100%; /* Ensure the buttons span the width of the modal */
+    background-color: transparent;
+  }
+  
+  .confirmButton, .cancelButton {
+    padding: 0.5rem 1rem;
+    color: white;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  
+  .confirmButton {
+    background-color: #d9534f;
+  }
+  
+  .cancelButton {
+    background-color: #5bc0de;
+  }
+  
+

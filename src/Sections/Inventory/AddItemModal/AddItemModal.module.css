@@ -1,0 +1,81 @@
+/* AddItemModal.module.css */
+form{
+    background-color: transparent;
+}
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it appears above other content */
+}
+
+.modal {
+    background-color: #0e0e0e; /* White background for the modal */
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%; /* Maximize space usage */
+    max-width: 500px; /* Limit maximum width */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+    animation: fadeIn 0.3s ease; /* Optional fade-in animation */
+}
+
+.modalHeader {
+    margin: 0 0 20px; /* Space below heading */
+    font-size: 2rem;
+    font-weight: 700;
+    background-color: transparent;
+    text-align: center; /* Centered heading */
+}
+
+.modalInput {
+    width: 95%; /* Full width inputs */
+    padding: 10px;
+    margin: 10px 0; /* Space between inputs */
+    border: 1px solid #ccc; /* Border styling */
+    border-radius: 4px; /* Rounded corners */
+    color: #fff;
+    background-color: #272626;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: space-between; /* Space buttons evenly */
+    background-color: transparent;
+}
+
+.buttonSubmit {
+    padding: 10px 20px; /* Button padding */
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+    background-color: #d9534f; /* Blue button for submit */
+    color: white; /* White text */
+}
+
+.buttonCancel {
+    padding: 10px 20px; /* Button padding */
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+    background-color: #ccc; /* Grey button for cancel */
+    color: black; /* Black text */
+}
+
+/* Optional fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+

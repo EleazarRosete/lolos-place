@@ -1,0 +1,72 @@
+/* Inventory.module.css */
+/* Update existing styles for better responsiveness */
+
+.itemTable {
+    width: 100%;
+    border-collapse: collapse; /* Remove space between table cells */
+}
+
+.itemTable th,
+.itemTable td {
+    border: 1px solid #ddd; /* Add borders */
+    padding: 8px; /* Add padding */
+    text-align: left; /* Align text to the left */
+}
+
+.itemTable th {
+    background-color: #0e0e0e; /* Header background color */
+    color: white; /* Header text color */
+}
+
+.itemRow {
+    width: 100%; /* Make the row take full width */
+}
+
+.itemRow:hover {
+    background-color: #0e0e0e; /* Highlight row on hover */
+    color: white; /* Change text color on hover for contrast */
+}
+
+.itemTable td {
+    border: 1px solid #ddd; /* Add borders */
+    padding: 12px; /* Increased padding for better spacing */
+    text-align: left; /* Align text to the left */
+    display: flex; /* Use flex for aligning buttons */
+    justify-content: space-between; /* Space buttons evenly */
+    align-items: center; /* Center items vertically */
+}
+
+.editButton,
+.removeButton {
+    padding: 0.5rem 1rem; /* Adjust padding for touch-friendly interface */
+    border: 1px solid; /* Border style */
+    border-radius: 0.2rem; /* Rounded corners */
+    transition: background-color 0.3s ease-in-out, transform 0.2s; /* Transition for hover and active state */
+    flex: 1; /* Allow buttons to grow and take up available space */
+    margin: 0.2rem; /* Add margin for spacing */
+    min-width: 100px; /* Minimum width for buttons to maintain usability */
+}
+
+.editButton:hover,
+.removeButton:hover {
+    background-color: #d9534f; /* Hover background color */
+    cursor: pointer; /* Pointer cursor for interactivity */
+    font-weight: 500; /* Bold text on hover */
+    border: 0; /* Remove border on hover for cleaner look */
+}
+
+.actionGroup {
+    width: 100%; /* Ensure action group takes full width */
+    display: flex; /* Use flexbox for button alignment */
+    justify-content: space-evenly; /* Space buttons evenly */
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+/* Optional: Add media query for further responsiveness */
+@media (max-width: 600px) {
+    .editButton,
+    .removeButton {
+        flex: 1 1 45%; /* Grow and shrink with a base width of 45% */
+        margin: 0.2rem; /* Maintain margin for spacing */
+    }
+}

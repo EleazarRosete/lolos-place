@@ -1,0 +1,120 @@
+.aside {
+    background-color: transparent;
+    width: 15%; 
+    height: 100vh; 
+    color: white; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5); 
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+}
+
+.logoContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: transparent;
+    font-size: 100%;
+    width: 100%;
+    height: 10vh;
+    text-wrap: wrap;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .dinerName {
+    font-family: "Tangerine", cursive;
+    font-weight: 200;
+    font-style: normal;
+    font-size: 300%;
+    background-color: transparent;
+    position: relative;
+    top: 10%;
+  }
+  
+  .restaurant {
+    background-color: transparent;
+    font-size: 40%;
+    position: relative;
+    top: -30%;
+  }
+  
+
+.sideButton{
+    width: 10rem;
+    border-radius: 0.3rem;
+    padding: 0.5rem 0.8rem;
+    border: 0;
+    background-color: transparent;
+    font-size: 0.9rem;
+    transition: 0.5s ease-in-out;
+    cursor: pointer;
+}
+
+.sideButton:hover{
+    background-color: #232323;
+    box-shadow: 0 0 2rem #232323;
+    cursor: pointer;
+}
+
+.buttonIcons{
+    width: 2rem;
+    height: 1.5rem;
+    padding-right: 0.5rem;
+    background-color: transparent;
+    position: relative;
+    top: 25%;
+}
+
+
+.logoutOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    background-color: transparent;
+  }
+  
+  .logout {
+    background-color: #0E0E0E;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0rem 0rem 1rem #242424;
+    text-align: center;
+  }
+  
+  .logout h2,
+  .logout p,
+  .logoutButtons {
+    background-color: transparent;
+  }
+  
+  .confirmButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    margin-right: 1rem;
+  }
+  
+  .cancelButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    margin-left: 1rem;
+  }
+  
