@@ -1,123 +1,136 @@
 import React, { useState, useEffect } from 'react';
 import styles from './POS.module.css';
 import Product from './Product/Product.jsx';
-
-// Food Image
-import narutoPic from '../../assets/Food Images/Naruto_newshot.png';
+import Order from './Order/Order.jsx';
 
 function POS() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('1'); // default to 'All'
-    const [products] = useState([
-        { 
-            id: 1, 
-            name: "Naruto Ramen -Naruto Shippuden x2 x2 x2 x2 efwqef wqef wqe fwq", 
-            category: "Main", 
-            image: narutoPic, 
-            price: 300, 
-            description: "Good for 2 people", 
-            items: null
-        },
-        { 
-            id: 2, 
-            name: "Adobong Manok", 
-            category: "Main", 
-            image: narutoPic, 
-            price: 400, 
-            description: "Good for 3 people", 
-            items: null 
-        },
-        { 
-            id: 3, 
-            name: "Set A", 
-            category: "Soup", 
-            image: narutoPic, 
-            price: 700, 
-            description: "Good for 5 people", 
-            items: ["Nilaga", "Rice - x2", "Sinigang", "Nilaga", "Rice - x2", "Sinigang","Nilaga", "Rice - x2", "Sinigang","Nilaga", "Rice - x2", "Sinigang"]
-        },
-        { 
-            id: 4, 
-            name: "Sinigang", 
-            category: "Soup", 
-            image: narutoPic, 
-            price: 250, 
-            description: "Good for 1 person", 
-            items: null
-        },
-        { 
-            id: 5, 
-            name: "Pancit Canton", 
-            category: "Main", 
-            image: narutoPic, 
-            price: 150, 
-            description: "Good for 1 person", 
-            items: null 
-        }
-    ]);
-    const [filteredProducts, setFilteredProducts] = useState(products);
-    const [order, setOrder] = useState([]); // State to manage the order
+    const [quantity, setQuantity] = useState(0);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [categories, setCategories] = useState([]); // State for categories
+    const [order, setOrder] = useState([]);
 
-    // Function to filter by category and search term
-    const filterProducts = () => {
-        let filtered = products.filter(product =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        if (selectedCategory !== '1') {
-            filtered = filtered.filter(product => product.category === getCategoryName(selectedCategory));
-        }
-
-        setFilteredProducts(filtered);
-    };
-
-    // Helper function to get category name from value
-    const getCategoryName = (value) => {
-        switch (value) {
-            case '2': return 'Main';
-            case '3': return 'Soup';
-            case '4': return 'Drinks';
-            default: return 'All';
-        }
-    };
-
-    // Handle category change
-    const handleCategoryChange = (e) => {
-        setSelectedCategory(e.target.value);
-    };
-
-    // Reapply filter whenever search term or category changes
     useEffect(() => {
-        filterProducts();
-    }, [searchTerm, selectedCategory]);
+        const getProducts = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/menu/get-product", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+                const jsonData = await response.json();
+                setProducts(jsonData);
+                setFilteredProducts(jsonData);
+            } catch (err) {
+                console.error('Error fetching products:', err.message);
+            }
+        };
 
-    // Separate individual products and bundles
-    const individualProducts = filteredProducts.filter(product => !product.items); // No items means it's an individual product
-    const bundles = filteredProducts.filter(product => product.items); // If items array exists, it's a bundle/set
+        getProducts();
+    }, []);
 
-    // Function to add product to the order
-    const addToOrder = (product) => {
-        const existingOrderItem = order.find(item => item.name === product.name);
+    useEffect(() => {
+        const getCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/menu/get-categories", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                });
+                const jsonData = await response.json();
+                setCategories(jsonData);
+            } catch (err) {
+                console.error('Error fetching categories:', err.message);
+            }
+        };
 
-        if (existingOrderItem) {
-            // Update quantity if item already exists in the order
-            setOrder(order.map(item => 
-                item.name === product.name 
-                    ? { ...item, quantity: item.quantity + product.quantity } 
-                    : item
-            ));
+        getCategories();
+    }, []);
+
+    const handleSortByCategory = (e) => {
+        const category = e.target.value;
+        setSelectedCategory(category);
+    
+        if (category === "All" || category === "") {
+            setFilteredProducts(products); // Reset to full list of products
         } else {
-            // Add new item to the order
-            setOrder([...order, { ...product }]);
+            const filtered = products.filter(product => product.category === category);
+            setFilteredProducts(filtered); // Set the filtered list of products
+        }
+    };
+    
+    
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            const filtered = products.filter(item =>
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProducts(filtered);
+        }, 300);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm, products]);
+
+    const addToOrder = async (menu_id, name, price, quantity) => {
+        const existingOrderItem = order.find(item => item.menu_id === menu_id);
+        setQuantity(quantity);
+
+        // if (existingOrderItem) {
+        //     setOrder(order.map(item =>
+        //         item.menu_id === menu_id
+        //             ? {
+        //                 ...item,
+        //                 stock: item.stocks + quantity,
+        //                 total: (item.stocks + quantity) * item.price
+        //             }
+        //             : item
+        //     ));
+        // } else {
+        //     setOrder([...order, {
+        //         menu_id,
+        //         name: name,
+        //         price: price,
+        //         quantity,
+        //         total: price * quantity
+        //     }]);
+        // }
+
+        // Update the stock in the database
+
+        console.log(menu_id, quantity);
+        try {
+            const response = await fetch(`http://localhost:5000/menu/update-product-stock/${menu_id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quantity }), // Send stock to deduct
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error updating stock: ${response.statusText}`);
+            }
+
+            // Update the stock in the products state
+            setProducts(prevProducts =>
+                prevProducts.map(product =>
+                    product.menu_id === menu_id
+                        ? { ...product, stocks: product.stocks - quantity } // Reduce stock in state
+                        : product
+                )
+            );
+
+        } catch (err) {
+            console.error('Error updating product stock:', err.message);
         }
     };
 
-    // Function to handle placing the order (e.g., reset the order or send it to a backend)
     const placeOrder = () => {
         if (order.length > 0) {
             console.log('Order placed:', order);
             alert('Order placed successfully!');
-            setOrder([]); // Reset the order after placing it
+            setOrder([]); // Reset the order after placing
         } else {
             alert('No items in the order!');
         }
@@ -127,69 +140,50 @@ function POS() {
         <section className={styles.section}>
             <div className={styles.posContainer}>
                 <div className={styles.navbar}>
-                    <form action="#" className={styles.forms}>
+                    <form className={styles.forms}>
                         <div className={styles.searchContainer}>
-                            <input 
-                                type="text" 
-                                className={styles.searchBar} 
-                                placeholder="Search..." 
-                                name="search"
-                                value={searchTerm} // Bind input to search term state
-                                onChange={(e) => setSearchTerm(e.target.value)} // Update search term
+                            <input
+                                type="text"
+                                className={styles.searchBar}
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <div className={styles.filterContainer}>
-                            <select value={selectedCategory} onChange={handleCategoryChange}>
-                                <option value="1">All</option>
-                                <option value="2">Main</option>
-                                <option value="3">Soup</option>
-                                <option value="4">Drinks</option>
-                            </select>
+                        <select
+                            className={styles.category}
+                            value={selectedCategory}
+                            onChange={handleSortByCategory}
+                        >
+                            <option value="All">All</option>
+                            {categories.map((category, index) => (
+                                <option key={index} value={category}>
+                                    {category} {/* Displaying the category name */}
+                                </option>
+                            ))}
+                        </select>
                         </div>
                     </form>
                 </div>
                 
                 <div className={styles.menuContainer}>
-                    <h3 className={styles.categoryTitle}>Individual Products</h3>
-                    <div className={styles.individualProductsContainer}>
-                        {individualProducts.length > 0 ? (
-                            individualProducts
-                                .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-                                .map(product => (
-                                    <Product 
-                                        key={product.id} 
-                                        image={product.image} 
-                                        name={product.name}
-                                        price={product.price}
-                                        description={product.description}
-                                        items={product.items}
-                                        onAddToOrder={addToOrder} // Pass add to order function
-                                    />
-                                ))
+                    <div className={styles.productContainer}>
+                        {filteredProducts.length > 0 ? (
+                            filteredProducts.map(product => (
+                                <Product
+                                    menu_id={product.menu_id}
+                                    name={product.name}
+                                    price={product.price}
+                                    image={product.img}
+                                    description={product.description}
+                                    items={product.items}
+                                    stock={product.stocks}
+                                    onAddToOrder={addToOrder}
+                                />
+                            ))
                         ) : (
-                            <p className={styles.pText}>No individual products found</p>
-                        )}
-                    </div>
-
-                    <h3 className={styles.categoryTitle}>Bundles/Sets</h3>
-                    <div className={styles.bundleContainer}>
-                        {bundles.length > 0 ? (
-                            bundles
-                                .sort((a, b) => a.name.localeCompare(b.name)) // Sort alphabetically
-                                .map(product => (
-                                    <Product 
-                                        key={product.id} 
-                                        image={product.image} 
-                                        name={product.name}
-                                        category={product.category}
-                                        price={product.price}
-                                        description={product.description}
-                                        items={product.items}
-                                        onAddToOrder={addToOrder} // Pass add to order function
-                                    />
-                                ))
-                        ) : (
-                            <p className={styles.pText}>No bundles found</p>
+                            <p className={styles.pText}>No products found</p>
                         )}
                     </div>
                 </div>
@@ -198,13 +192,18 @@ function POS() {
                     <h1 className={styles.orderTxt}>ORDERS</h1>
                     <div className={styles.orders}>
                         {order.length > 0 ? (
-                            order.map((item, index) => (
-                                <div key={index} className={styles.orderItem}>
-                                    <p>{item.name} - ₱{item.price} x {item.quantity}</p>
-                                </div>
+                            order.map(orders => (
+                                <Order
+                                    id={orders.menu_id}
+                                    name={orders.name}
+                                    price={orders.price}
+                                    stock={orders.stocks}
+                                    quantity={quantity}
+                                    onAddToOrder={addToOrder}
+                                />
                             ))
                         ) : (
-                            <p className={styles.pText}>No items in the order</p>
+                            <p className={styles.pText}>No orders yet</p>
                         )}
                     </div>
                     <button className={styles.placeOrder} onClick={placeOrder}>

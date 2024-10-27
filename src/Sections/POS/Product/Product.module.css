@@ -1,38 +1,53 @@
 .productCard {
-    width: auto; /* Allow container width to adjust based on its content */
-    height: auto; /* Allow container height to adjust based on its content */
+    width: auto;
+    height: auto;
     display: grid;
-    grid-template-rows: auto auto auto auto; /* Make rows responsive to content height */
+    grid-template-rows: auto auto auto auto;
     background-color: #0e0e0e;
     border-radius: 1rem;
-    justify-content: start;
+    justify-content: center;
     align-items: center;
     padding: 1rem;
     gap: 0.5rem;
     margin-top: 1rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow for better visibility */
-    max-width: 300px; /* Optional: Max width for better responsiveness */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+}
+
+.imageContainer {
+    width: 100%;
+    height: 130px; /* Set a reasonable height for the image container */
+    overflow: hidden;
+    border-radius: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f8f8;
 }
 
 .productImage {
-    width: 100%; /* Make the image take full width of the container */
-    height: auto; /* Maintain aspect ratio */
+    width: 100%;
+    height: auto;
+    max-height: 110px; /* Set a more compact maximum height for the image */
+    object-fit: contain; /* Ensure the image fits without distortion */
     background-color: transparent;
     border-radius: 1rem;
 }
 
-.name, .description {
-    width: 100%; /* Use full width of the container */
-    font-size: 1rem; /* Keep font size responsive */
+
+.name,
+.description {
+    width: 100%;
+    font-size: 1rem;
     text-align: center;
     background-color: transparent;
-    word-wrap: break-word; /* Prevent text from overflowing */
-    color: white; /* Ensure text is readable */
+    word-wrap: break-word;
+    color: white;
 }
 
 .addToOrderButton {
-    width: 100%; /* Take full width of the container */
-    height: 40px; /* Set a fixed height for the button */
+    width: 100%;
+    height: 40px;
     background-color: #272626;
     font-size: large;
     border: none;
@@ -41,15 +56,16 @@
     color: white;
 }
 
-.basket:hover {
-    background-color: #3a3a3a; /* Change background on hover */
+.addToOrderButton:hover {
+    background-color: #3a3a3a;
 }
 
-.productDetails, .itemsList{
+.productDetails,
+.itemsList {
     background-color: transparent;
 }
 
-.quantityInput{
+.stockInput {
     background-color: #0e0e0e;
     border: 1px solid #272727;
     border-radius: 0.2rem;
@@ -57,14 +73,16 @@
 }
 
 .itemsList {
-    list-style-type: none; /* Remove default bullet points */
-    padding: 0; /* Remove padding */
-    margin: 0; /* Remove margin */
+    width: 100%;
+    height: 10vh;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
-.item {
-    margin: 0.2rem 0; /* Add some space between items */
-    color: #ffffff; /* Adjust color as needed */
-    font-size: 0.9rem; /* Adjust font size as needed */
+.items {
+    margin: 0.2rem 0;
+    color: #ffffff;
+    font-size: 0.9rem;
     background-color: transparent;
 }

@@ -18,7 +18,7 @@
     background-color: transparent;
   }
   
-  .text, .text1, .quantityText {
+  .text, .text1, .stockText {
     font-weight: 200;
     background-color: transparent;
   }
@@ -28,7 +28,7 @@
     font-weight: 300;
  }
 
-  .quantityText {
+  .stockText {
     padding: 0.2rem 2rem;
   }
   
@@ -78,7 +78,7 @@
     justify-content: space-around;
   }
   
-  .quantityControlInModal {
+  .stockControlInModal {
     display: flex;
     align-items: center;
     justify-content: center;

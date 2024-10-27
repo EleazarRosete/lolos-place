@@ -70,3 +70,7 @@
         margin: 0.2rem; /* Maintain margin for spacing */
     }
 }
+
+.itemImage{
+    width: 100%;
+}

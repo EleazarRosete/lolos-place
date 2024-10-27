@@ -1,5 +1,5 @@
-const addComment = "INSERT INTO feedbacktbl (username, comment, feedback_date) VALUES ($1, $2, $3)";
-const getComments = "SELECT * FROM feedbacktbl";
+const addComment = "INSERT INTO feedback (name, comment, date) VALUES ($1, $2, $3)";
+const getComments = "SELECT * FROM feedback";
 
 
 module.exports = {

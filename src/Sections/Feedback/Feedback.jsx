@@ -47,9 +47,9 @@ function Feedback() {
                     comments.map((c, index) => (
                         <Comment
                             key={index} // Use index as a key for mapping
-                            username={c.username}
+                            username={c.name}
                             comment={c.comment}
-                            date={c.feedback_date}
+                            date={c.date}
                         />
                     ))
                 ) : (

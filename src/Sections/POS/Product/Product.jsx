@@ -1,40 +1,46 @@
 import React, { useState } from 'react';
 import styles from './Product.module.css';
 
-function Product({ image, name, price, description, items, onAddToOrder }) {
-    const [quantity, setQuantity] = useState(1); // State for quantity
+function Product({ menu_id, name, price, image, description, items, stock, onAddToOrder }) {
+    const [quantity, setQuantity] = useState(1);
 
     const handleAddToOrder = () => {
-        if (quantity > 0) {
-            onAddToOrder({ name, price, quantity }); // Pass the product with quantity to the order
-            setQuantity(1); // Reset quantity to 1 after adding
+        if (quantity > 0 && quantity <= stock) {
+            onAddToOrder(menu_id, name, price, quantity); 
+            stock = stock - quantity;
+            setQuantity(1); 
+
+        } else {
+            alert('Please select a valid stock amount.');
         }
     };
 
     return (
         <div className={styles.productCard}>
-            <img src={image} alt={name} className={styles.productImage} />
+            <div className={styles.imageContainer}>
+                <img src={image} alt={name} className={styles.productImage} />
+            </div>
             <h4 className={styles.productDetails}>{name}</h4>
             <p className={styles.productDetails}>₱{price}</p>
             <p className={styles.productDetails}>{description}</p>
-            <p className={styles.productDetails}>Items:</p>
-            {items && items.length > 0 && (
-                <ul className={styles.itemsList}>
-                    {items.map((item, index) => (
-                        <li key={index} className={styles.item}>{item}</li>
-                    ))}
-                </ul>
-            )}
+            <p className={styles.productDetails}>{items}</p>
             <input 
                 type="number" 
-                min="1" 
+                min='1'
+                placeholder='Quantity'
+                max={stock} 
                 value={quantity} 
-                onChange={(e) => setQuantity(Number(e.target.value))} // Update quantity state
-                className={styles.quantityInput}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className={styles.stockInput}
             />
-            <button className={styles.addToOrderButton} onClick={handleAddToOrder}>
+            <button 
+                className={styles.addToOrderButton} 
+                onClick={handleAddToOrder} 
+                disabled={quantity < 1 || quantity > stock}
+            >
                 Add to Basket
             </button>
+            <p className={styles.stockInfo}>Available stock: {stock}</p>
         </div>
     );
 }

@@ -12,7 +12,7 @@ function Inventory() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [filteredItems, setFilteredItems] = useState([]);
-    const [categories, setCategories] = useState([]); // State for categories
+    const [categories, setCategories] = useState([]);
 
     const getProduct = async () => {
         try {
@@ -21,17 +21,17 @@ function Inventory() {
                 headers: { "Content-Type": "application/json" },
             });
             const jsonData = await response.json();
+            console.log("Fetched products:", jsonData); // Debug log
             setProduct(jsonData);
             setFilteredItems(jsonData);
-            extractCategories(jsonData); // Extract categories after fetching products
+            extractCategories(jsonData);
         } catch (err) {
             console.error('Error fetching products:', err.message);
         }
     };
 
-    // Function to extract unique categories
     const extractCategories = (products) => {
-        const uniqueCategories = [...new Set(products.map(item => item.product_category))];
+        const uniqueCategories = [...new Set(products.map(item => item.category))];
         setCategories(uniqueCategories);
     };
 
@@ -40,10 +40,11 @@ function Inventory() {
     }, []);
 
     const handleAddItem = (newItem) => {
-        const newItemsList = [...product, { product_id: Date.now(), ...newItem }];
+        const newItemsList = [...product, { menu_id: Date.now(), ...newItem }];
+        console.log("Added new item:", newItem); // Debug log
         setProduct(newItemsList);
         setFilteredItems(newItemsList);
-        extractCategories(newItemsList); // Update categories when adding new item
+        extractCategories(newItemsList);
         setIsModalOpen(false);
     };
 
@@ -56,10 +57,11 @@ function Inventory() {
                 },
             });
 
-            const updatedItems = product.filter(item => item.product_id !== id);
+            const updatedItems = product.filter(item => item.menu_id !== id);
+            console.log("Removed item with ID:", id); // Debug log
             setProduct(updatedItems);
             setFilteredItems(updatedItems);
-            extractCategories(updatedItems); // Update categories after removal
+            extractCategories(updatedItems);
             setShowConfirmRemove(false);
             setItemToRemove(null);
         } catch (err) {
@@ -68,7 +70,7 @@ function Inventory() {
     };
 
     const handleEditItem = (id) => {
-        const itemToEdit = product.find(item => item.product_id === id);
+        const itemToEdit = product.find(item => item.menu_id === id);
         setEditingItem(itemToEdit);
         setIsModalOpen(true);
     };
@@ -88,12 +90,12 @@ function Inventory() {
     };
 
     const handleSortByName = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => a.product_name.localeCompare(b.product_name));
+        const sortedItems = [...filteredItems].sort((a, b) => a.menu_name.localeCompare(b.menu_name));
         setFilteredItems(sortedItems);
     };
 
     const handleSortByQuantity = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => a.product_quantity - b.product_quantity);
+        const sortedItems = [...filteredItems].sort((a, b) => a.stocks - b.stocks);
         setFilteredItems(sortedItems);
     };
 
@@ -104,7 +106,7 @@ function Inventory() {
         if (category === "All" || category === "") {
             setFilteredItems(product);
         } else {
-            const filtered = product.filter(item => item.product_category === category);
+            const filtered = product.filter(item => item.category === category);
             setFilteredItems(filtered);
         }
     };
@@ -112,9 +114,9 @@ function Inventory() {
     useEffect(() => {
         const handler = setTimeout(() => {
             const filtered = product.filter(item =>
-                item.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
-            setFilteredItems(filtered);
+            setFilteredItems(filtered.length > 0 ? filtered : product);
         }, 300);
 
         return () => {
@@ -161,10 +163,10 @@ function Inventory() {
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th>Price</th>
-                                <th>Image Path</th>
+                                <th>Image</th>
                                 <th>Description</th>
                                 <th>Items</th>
-                                <th>Quantity</th>
+                                <th>Stocks</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -172,10 +174,10 @@ function Inventory() {
                             {filteredItems.length > 0 ? (
                                 filteredItems.map((p) => (
                                     <Item
-                                        key={p.product_id}
+                                        key={p.menu_id}
                                         item={p}
-                                        onEdit={() => handleEditItem(p.product_id)}
-                                        onRemove={() => confirmRemoveItem(p.product_id)}
+                                        onEdit={() => handleEditItem(p.menu_id)}
+                                        onRemove={() => confirmRemoveItem(p.menu_id)}
                                     />
                                 ))
                             ) : (
@@ -193,10 +195,10 @@ function Inventory() {
                         onAddItem={handleAddItem}
                         onUpdateItem={(updatedItem) => {
                             const updatedItems = product.map(item => 
-                                (item.product_id === updatedItem.product_id ? updatedItem : item));
+                                (item.menu_id === updatedItem.menu_id ? updatedItem : item));
                             setProduct(updatedItems);
                             setFilteredItems(updatedItems);
-                            extractCategories(updatedItems); // Update categories when updating item
+                            extractCategories(updatedItems);
                             setEditingItem(null);
                             setIsModalOpen(false);
                         }}
