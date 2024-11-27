@@ -10,5 +10,8 @@ router.put('/edit-product/:menu_id', controller.updateProduct);
 router.delete('/delete-product/:menu_id', controller.deleteProduct);
 router.patch('/update-product-stock/:menu_id', controller.updateProductStock);
 router.get('/get-categories',controller.getCategories);
+router.get('/get-low-stocks',controller.getLowStocks);
+
+
 
 module.exports = router;

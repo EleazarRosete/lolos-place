@@ -1,0 +1,16 @@
+.section {
+    width: 82%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: #FAF6EA; /* Set the background to FAF6EA */
+    display: flex;
+    padding: 0.5rem;
+    overflow: hidden;
+    overflow-y: auto;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+

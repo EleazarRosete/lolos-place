@@ -1,0 +1,63 @@
+
+
+/* Card Styling */
+.card {
+    width: 100%;
+    max-width: 320px; /* Small size */
+    background-color: #FEF7E1;
+    opacity: 0.8;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    margin: 10px;
+    padding-top: 0;
+    margin-top: 0;
+    border-radius: 5px;
+}
+
+/* Header Styling */
+.cardHeaderTxt {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #3e2723; /* Dark brown color for the vintage look */
+}
+
+/* Button Styling */
+/* Button Hover Effect */
+.salesButton:hover {
+    background-color: #6d4c41;
+ /* Lighter brown when hovering */
+}
+
+.salesButton{
+    width: 100%;
+    height: 50px;
+    padding: 0.5rem;
+    border: 2px solid #6d4c41; /* Border color for the vintage look */
+    background-color: #3e2723; /* Dark brown background for the button */
+    color: #F4F4F9;
+    font-weight: 700;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+/* Currency Formatting */
+/* button span {
+    font-size: 1.5rem;
+    margin-left: 5px;
+} */
+
+/* Adding texture (Optional) */
+body {
+    background-image: url('https://www.transparenttextures.com/patterns/old_wall.png'); /* Optional background texture */
+    background-repeat: repeat;
+}

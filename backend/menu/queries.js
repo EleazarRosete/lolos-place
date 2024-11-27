@@ -6,7 +6,7 @@ const deleteProduct = "DELETE FROM menu_items WHERE menu_id = $1;";
 const getCategories = 'SELECT category FROM menu_items';
 const getStock = 'SELECT stocks FROM menu_items WHERE menu_id = $1';
 const updateStock = `UPDATE menu_items SET stocks = stocks - $1 WHERE menu_id = $2`;
-
+const getLowStocks = 'SELECT * FROM menu_items WHERE stocks < 21';
 
 
 module.exports = {
@@ -15,7 +15,8 @@ module.exports = {
     getProductById,
     updateProduct,
     deleteProduct,
-    updateStock,
     getCategories,
     getStock,
+    updateStock,
+    getLowStocks,
 };

@@ -13,6 +13,8 @@ function Inventory() {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [filteredItems, setFilteredItems] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [sortByQuantityAsc, setSortByQuantityAsc] = useState(true);
+    const [sortByNameAsc, setSortByNameAsc] = useState(true);      
 
     const getProduct = async () => {
         try {
@@ -90,13 +92,23 @@ function Inventory() {
     };
 
     const handleSortByName = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => a.menu_name.localeCompare(b.menu_name));
+        const sortedItems = [...filteredItems].sort((a, b) => {
+            return sortByNameAsc
+                ? a.name.localeCompare(b.name) // A-Z
+                : b.name.localeCompare(a.name); // Z-A
+        });
         setFilteredItems(sortedItems);
+        setSortByNameAsc(!sortByNameAsc); // Toggle sorting direction
     };
 
     const handleSortByQuantity = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => a.stocks - b.stocks);
+        const sortedItems = [...filteredItems].sort((a, b) => {
+            return sortByQuantityAsc
+                ? a.stocks - b.stocks // Lowest to Highest
+                : b.stocks - a.stocks; // Highest to Lowest
+        });
         setFilteredItems(sortedItems);
+        setSortByQuantityAsc(!sortByQuantityAsc); // Toggle sorting direction
     };
 
     const handleSortByCategory = (e) => {

@@ -1,0 +1,234 @@
+/* General Header styles */
+.mainlayout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(255, 228, 155);
+  color: rgb(255, 255, 255);
+  height: 5em;
+  padding: 0 1em;
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #888 #f1f1f1; /* For Firefox */
+}
+/* Webkit-based browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #D1BB80; /* Background of the track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7c6f4c; /* Color of the scrollbar thumb */
+  border-radius: 5px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5f5741; /* Color when hovered */
+}
+
+/* Logo and Title */
+.mainlayout-header h1 {
+  color: black;
+  font-family: "Tangerine", system-ui;
+  font-weight: 700;
+  font-size: 4em;
+
+}
+
+.mainlayout-header .logo {
+  width: 5.5em;
+  height: auto;
+  margin-right: -5em;
+  margin-left: 1em;
+}
+
+/* Header buttons */
+.mainlayout-header .header-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.mainlayout-header .header-buttons a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.mainlayout-header .header-buttons button {
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0);
+  color: rgb(0, 0, 0);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  margin: 1em;
+}
+
+.mainlayout-header .header-buttons button:hover {
+  background-color: grey;
+}
+
+.mainlayout-header .header-buttons button:hover a {
+  color: rgb(255, 255, 255);
+}
+
+/* Profile dropdown for large screens */
+.large-screen-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 1em; /* Adjust this value as needed for spacing */
+}
+
+.mainlayout-header .profile-dropdown span {
+  margin-left: 0.5em; /* Space between the profile image and the text */
+  color: black; /* Ensure text color matches */
+}
+
+/* Profile image styling (if using icons or custom images) */
+.mainlayout-header .profile-dropdown .profile-img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mainlayout-header .profile-dropdown-btn {
+  display: flex;
+  align-items: center;
+}
+
+/* Hide customer full name in the burger menu on small screens */
+.small-screen-only {
+  display: none;
+}
+
+/* Burger menu */
+.burger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 25px;
+  height: 18px;
+  cursor: pointer;
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  z-index: 1001;
+}
+
+.burger-menu div {
+  background-color: black;
+  height: 3px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Responsive styles */
+@media (max-width: 1000px) {
+  .mainlayout-header h1 {
+    font-size: 2.5em;
+    margin-right: 1em;
+  }
+
+  .mainlayout-header .header-buttons {
+    display: none; /* Hide buttons initially */
+  }
+
+  .burger-menu {
+    display: flex; /* Show burger menu */
+  }
+
+  /* Slide-in effect for header buttons */
+  .header-buttons.active {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 250px;
+    height: 100vh;
+    background-color: white;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    padding: 2em;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .header-buttons.active {
+    transform: translateX(0); /* Slide in */
+  }
+
+  .header-buttons button {
+    width: 100%;
+    margin: 0.5em 0;
+  }
+
+  /* Hide the profile dropdown on small screens */
+  .large-screen-profile {
+    display: none;
+  }
+
+  /* Show Edit Profile and Log Out buttons in the burger menu on small screens */
+  .small-screen-only {
+    display: block;
+  }
+
+  /* Hide the customer full name in the burger menu */
+  .profile-dropdown-btn {
+    display: none;
+  }
+
+  /* Full name in burger menu */
+  .burger-profile-buttons .burger-fullname {
+    margin-top: 5em;
+    padding: 1em;
+    text-align: center;
+    font-size: 1.2em;
+    color: black;
+  }
+
+  .burger-profile-buttons .burger-fullname {
+    display: block;
+    font-weight: bold;
+  }
+}
+
+/* Responsive styles for iPhone SE and other small screens */
+@media (max-width: 320px) {
+  .mainlayout-header h1 {
+    font-size: 2.5em;
+    margin-right: 0.5em;
+  }
+
+  .mainlayout-header .logo {
+    width: 4em;
+    margin-right: 0.5em;
+  }
+
+  .burger-menu.active + .header-buttons .profile-dropdown-btn {
+    display: none;
+  }
+}
+
+/* Main content area styles */
+.main-layout main {
+  border: none; /* Remove any border */
+  margin: 0; /* Reset margin */
+  padding: 0; /* Reset padding */
+  width: 100%; /* Ensure it spans full width */
+}
+
+/* Footer styles */
+footer {
+  color: white;
+  background-color: rgb(44, 40, 27);
+  text-align: center;
+  padding: 10px;
+  width: 100%;
+  position: relative;
+  margin-top: auto;
+}
+

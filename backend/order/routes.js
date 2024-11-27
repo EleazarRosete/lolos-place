@@ -3,15 +3,23 @@ const controller = require('./controller');
 
 const router = Router();
 
-router.post('/add-order', controller.addProduct);
-router.get('/get-order', controller.getProduct);
-router.get('/get-product/:id', controller.getProductById);
-router.put('/edit-product/:id', controller.updateProduct);
-router.delete('/delete-order/:id', controller.deleteProduct);
-router.patch('/update-order-quantity/:id', controller.updateProductQuantity);
-router.get('/get-categories',controller.getCategories);
+
+router.post('/add-order', controller.addOrder);
+router.get('/get-order', controller.getOrder);
+
+
+
+router.post('/add-reservation', controller.addReservation);
+router.get('/get-reservation', controller.getReservation);
+router.delete('/cancel-reservation/:reservation_id', controller.cancelReservation);
+
+router.post('/add-delivery', controller.addDelivery);
+router.get('/get-delivery', controller.getDelivery);
+router.put('/update-delivery/:delivery_id', controller.updateDeliveryStatus);
+
+
+
+router.get('/get-payment', controller.getPayment);
+
 
 module.exports = router;
-
-
-//add, get, edit, delete

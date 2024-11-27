@@ -164,6 +164,18 @@ const getCategories = async (req, res) => {
     }
 };
 
+const getLowStocks = async (req, res) => {
+    try {
+        // Execute the query to fetch low stock items
+        const result = await pool.query(queries.getLowStocks); // Make sure queries.getLowStocks is correct
+        // Return the rows from the query result
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
 module.exports = {
     addProduct,
     getProduct,
@@ -172,4 +184,5 @@ module.exports = {
     deleteProduct,
     updateProductStock,
     getCategories,
+    getLowStocks,
 };

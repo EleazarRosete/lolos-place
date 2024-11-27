@@ -3,7 +3,7 @@
     max-width: 95%;
     height: auto;
     padding: 1rem;
-    background-color: #2a2a2a;
+    background-color: #62504E; /* Set background color to FEF7E1 */
     border-radius: 0.4rem;
     display: flex;
     flex-direction: column;
@@ -33,13 +33,14 @@
     line-height: 1.6;
     background-color: transparent;
     word-wrap: break-word;
-    color: rgba(224, 224, 224, 0.9);
+    color: #F2F2F7; /* Set text color to F2F2F7 */
     font-family: 'Arial', sans-serif;
+    text-align: start;
 }
 
 .dateStyle {
     font-size: 0.9rem;
-    color: rgba(160, 160, 160, 0.9);
+    color: #F2F2F7; /* Set text color to F2F2F7 */
     font-family: 'Arial', sans-serif;
     background-color: transparent;
 }
@@ -47,6 +48,15 @@
 .usernameStyle {
     font-size: 1.5rem; /* Increased font size for username */
     font-weight: 600; /* Slightly bold */
-    color: rgba(224, 224, 224, 0.9); /* Consistent text color */
+    color: #F2F2F7; /* Set text color to F2F2F7 */
     background-color: transparent;
+}
+
+.sentimentStyle {
+    font-size: 1rem;
+    font-weight: 500; /* Medium weight */
+    margin-top: 0.5rem;
+    opacity: 0.9; /* Slightly faded for softer appearance */
+    background-color: transparent;
+    color: #F2F2F7; /* Set text color to F2F2F7 */
 }

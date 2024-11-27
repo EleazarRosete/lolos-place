@@ -4,6 +4,7 @@
 .itemTable {
     width: 100%;
     border-collapse: collapse; /* Remove space between table cells */
+    background-color: #FEF7E1; /* Set background color of the table */
 }
 
 .itemTable th,
@@ -14,8 +15,8 @@
 }
 
 .itemTable th {
-    background-color: #0e0e0e; /* Header background color */
-    color: white; /* Header text color */
+    background-color: #FEF7E1; /* Header background color */
+    color: black; /* Header text color */
 }
 
 .itemRow {
@@ -23,7 +24,7 @@
 }
 
 .itemRow:hover {
-    background-color: #0e0e0e; /* Highlight row on hover */
+    background-color: #FEF7E1; /* Highlight row on hover */
     color: white; /* Change text color on hover for contrast */
 }
 
@@ -71,6 +72,6 @@
     }
 }
 
-.itemImage{
+.itemImage {
     width: 100%;
 }

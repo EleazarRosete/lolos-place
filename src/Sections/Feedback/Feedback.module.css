@@ -1,9 +1,10 @@
 .section{
-    width: 84%;
-    height: 98vh;
+    width: 82%;
+    height: 100vh;
     position: fixed;
-    left: 15%;
-    background-color: #272626;
+    top: 0;
+    right: 0;
+    background-color: #FAF6EA; /* Set the background to FAF6EA */
     display: flex;
     padding: 0.5rem;
     overflow: hidden;
@@ -35,7 +36,7 @@
 }
 
 .sort{
-    background-color: #0e0e0e;
+    background-color: #62504E; /* Set the button background color to #62504E */
     border: 0;
     padding: 0.2rem 0.5rem;
     cursor: pointer;
@@ -44,13 +45,27 @@
 }
 
 .sort:hover{
-    background-color: #f44336;
+    background-color: #7a6a62; /* Lighter shade of #62504E for hover effect */
 }
+
+.filter{
+    background-color: #62504E; /* Set the filter button background color to #62504E */
+    border: 0;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    border-radius: 0.3rem;
+    transition: 0.5s ease-in-out;
+}
+
+.filter:hover{
+    background-color: #7a6a62; /* Lighter shade of #62504E for hover effect */
+}
+
 
 .feedbackContainer {
     width: 98%;
     height: 98vh;
-    background-color: #0e0e0e;
+    background-color: #f3f3f3; /* Lighter background for feedback container */
     border-radius: 0.4rem;
     display: flex;
     flex-direction: column;
@@ -68,11 +83,11 @@
 }
 
 .feedbackContainer::-webkit-scrollbar-track {
-    background: #0e0e0e; /* Background of the scrollbar track */
+    background: #f3f3f3; /* Light background for scrollbar track */
 }
 
 .feedbackContainer::-webkit-scrollbar-thumb {
-    background: #3a3a3a; /* Color of the scrollbar thumb */
+    background: #8a8a8a; /* Darker color for the scrollbar thumb */
     border-radius: 4px; /* Rounded corners for the scrollbar thumb */
 }
 
@@ -83,6 +98,13 @@
 /* For Firefox */
 .feedbackContainer {
     scrollbar-width: thin; /* Thin scrollbar */
-    scrollbar-color: #3a3a3a #0e0e0e; /* Thumb color and track color */
+    scrollbar-color: #8a8a8a #f3f3f3; /* Thumb color and track color */
+}
+
+.controls{
+    display: flex;
+    background-color: transparent;
+    width: 30%;
+    gap: 1rem;
 }
 

@@ -1,0 +1,99 @@
+
+
+/* Card Styles */
+.card {
+    width: 100%;
+    max-width: 320px; /* Small size */
+    background-color: #FEF7E1;
+    opacity: 0.8;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    margin: 10px;
+    padding-top: 0;
+    margin-top: 0;
+    border-radius: 5px;
+    color: #313132;
+}
+
+.card .cardHeaderTxt{
+    font-size: 1rem;
+    font-weight: 900;
+    color: #313132;
+}
+
+/* Feedback Button */
+.feedbackButton1 {
+    color: #333333;
+    padding: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+    font-size: 0.5rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: start;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Conditional Button Colors */
+.positiveButton {
+    background-color: #4CAF50; /* Green for positive */
+}
+
+.negativeButton {
+    background-color: #f44336; /* Red for negative */
+}
+
+.neutralButton {
+    background-color: #9E9E9E; /* Grey for neutral */
+}
+
+/* Hover Effects */
+
+/* Comment Text */
+.commentText1 {
+    font-size: 0.8rem;
+    color: #0e0e0e;
+    margin-left: 10px;
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* No Comments Style */
+.textStyle1 {
+    font-size: 14px;
+    color: #999;
+    text-align: center;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .card {
+        max-width: 100%; /* Make it full width on small screens */
+    }
+
+    .feedbackButton {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+
+    .commentText {
+        font-size: 12px;
+    }
+
+    .textStyle1 {
+        font-size: 12px;
+    }
+}

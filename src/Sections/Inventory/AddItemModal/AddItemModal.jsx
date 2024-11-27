@@ -5,7 +5,7 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        category:'',
+        category: '',
         price: '',
         items: [''],
         img: '',
@@ -24,7 +24,7 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
         setFormData({
             name: '',
             description: '',
-            category:'',
+            category: '',
             price: '',
             items: [''],
             img: '',
@@ -37,30 +37,46 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleItemChange = (index, event) => {
+        const newItems = [...formData.items];
+        newItems[index] = event.target.value;
+        setFormData({ ...formData, items: newItems });
+    };
+
+    const addInput = (e) => {
+        e.preventDefault();
+        setFormData({ ...formData, items: [...formData.items, ''] });
+    };
+
+    const removeInput = (index, e) => {
+        e.preventDefault();
+        const newItems = formData.items.filter((_, i) => i !== index);
+        setFormData({ ...formData, items: newItems });
+    };
+
     const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', file); // Append the file to the form data
+        const file = e.target.files[0];
+        if (file) {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
 
-        try {
-            const response = await fetch('http://localhost:5000/upload', { // Corrected URL
-                method: 'POST',
-                body: uploadFormData, // Send the FormData directly
-            });
+            try {
+                const response = await fetch('http://localhost:5000/upload', {
+                    method: 'POST',
+                    body: uploadFormData,
+                });
 
-            if (!response.ok) {
-                throw new Error('File upload failed');
+                if (!response.ok) {
+                    throw new Error('File upload failed');
+                }
+
+                const data = await response.json();
+                setFormData((prevData) => ({ ...prevData, img: data.filePath }));
+            } catch (err) {
+                console.error('Error uploading file:', err.message);
             }
-
-            const data = await response.json();
-            setFormData((prevData) => ({ ...prevData, img: data.filePath })); // Update form data with the permanent URL
-        } catch (err) {
-            console.error('Error uploading file:', err.message);
         }
-    }
-};
-
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -72,15 +88,13 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
                 await handleAddItem(formData);
                 onAddItem(formData);
             }
-            onClose(); // Close the modal after successful submission
+            onClose();
         } catch (err) {
             console.error('Error submitting form:', err.message);
-            // You can add more user feedback here, such as showing an alert
         }
     };
 
     const handleUpdateItem = async (updatedItem) => {
-        console.log(updatedItem);
         try {
             const response = await fetch(`http://localhost:5000/menu/edit-product/${updatedItem.id}`, {
                 method: 'PUT',
@@ -107,20 +121,18 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
                 },
                 body: JSON.stringify(newItem),
             });
-    
+
             if (!response.ok) {
                 throw new Error(`Failed to add item: ${response.statusText}`);
             }
-    
+
             const addedProduct = await response.json();
             return addedProduct;
         } catch (err) {
             console.error('Error adding item:', err.message);
-            // Set error message state here to display to the user
         }
     };
-    
-    
+
     return (
         <div className={styles.modal}>
             <div className={styles.modalContent}>
@@ -163,13 +175,23 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
                         value={formData.description}
                         onChange={handleChange}
                     />
-                    <input
-                        type="text"
-                        name="items"
-                        placeholder="Items"
-                        value={formData.items}
-                        onChange={handleChange}
-                    />
+                    <div>
+                        {(formData.items && Array.isArray(formData.items)) ? (
+                            formData.items.map((input, index) => (
+                                <div key={index}>
+                                    <input
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => handleItemChange(index, e)}
+                                    />
+                                    <button onClick={(e) => removeInput(index, e)}>Remove</button>
+                                </div>
+                            ))
+                        ) : (
+                            <div>No items available</div>
+                        )}
+    <button onClick={addInput}>Add Input</button>
+                    </div>
                     <input
                         type="number"
                         name="stocks"

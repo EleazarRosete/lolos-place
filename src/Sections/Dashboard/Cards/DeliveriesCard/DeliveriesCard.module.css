@@ -1,0 +1,209 @@
+.section {
+    width: 90%;
+    height: 70vh;
+    max-width: 100%; /* Small size */
+    background-color: #FCF6E6;
+    opacity: 0.8;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0;
+    margin-top: 1rem;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.productList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.productItem {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: #333;
+    font-size: 1.1rem;
+    transition: background-color 0.3s;
+}
+
+.productItem:hover {
+    background-color: #e0f7fa;
+}
+
+.loading {
+    font-size: 1rem;
+    color: #999;
+}
+
+@media (max-width: 768px) {
+    .card {
+        max-width: 90%;
+        padding: 15px;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .productItem {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 1.1rem;
+    }
+
+    .productItem {
+        font-size: 0.9rem;
+    }
+}
+
+
+
+.txtSyles{
+    color: black;
+    font-weight: 900;
+}
+
+
+.deliveryItem {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #FCF6E6;
+    border-bottom: 1px solid #62504E;
+}
+
+section .deliveryButton {
+    padding: 10px 12px;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 500;
+    border-radius: 4px;
+    background-color: #62504E; /* Updated background color */
+    color: #E5E2E7;
+    cursor: pointer;
+}
+
+
+.pending {
+    background-color: #007bff;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.modalContent {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.confirmButton {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancelButton {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+/* Add this to your CSS file */
+.section {
+    width: 90%;
+    height: 70vh;
+    max-width: 100%;
+    background-color: #FCF6E6;
+    opacity: 0.8;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0;
+    margin-top: 1rem;
+    overflow-y: auto;
+    scrollbar-color: #FCF6E6 transparent;
+    scrollbar-width: thin;
+    transition: scrollbar-color 0.3s ease-in-out;
+}
+
+/* Custom scrollbar styles */
+.section::-webkit-scrollbar {
+    width: 8px; /* Adjust scrollbar width */
+}
+
+.section::-webkit-scrollbar-track {
+    background-color: #FCF6E6; /* Match background */
+    border-radius: 10px;
+}
+
+.section::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.3); /* Subtle contrast for scrollbar */
+    border-radius: 10px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Fading scrollbar effect */
+.section:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.6); /* Darker on hover for better visibility */
+}
+
+/* Fading effect for inactivity */
+.section:active,
+.section:focus {
+    scrollbar-color: rgba(0, 0, 0, 0.3) #FCF6E6; /* Active scrollbar visibility */
+}

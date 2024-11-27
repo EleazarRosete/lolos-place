@@ -1,0 +1,198 @@
+.section {
+    width: 100%;
+    height: 70vh;
+    max-width: 100%; /* Small size */
+    background-color: #FCF6E6;
+    opacity: 0.8;
+    border: 0;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0;
+    margin-top: 1rem;
+    border-radius: 5px;
+    overflow-y: auto;
+}
+
+.txtSyles{
+    color: black;
+}
+
+.title {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.productList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.productItem {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    color: #333;
+    font-size: 1.1rem;
+    transition: background-color 0.3s;
+}
+
+.productItem:hover {
+    background-color: #e0f7fa;
+}
+
+.loading {
+    font-size: 1rem;
+    color: #999;
+}
+
+@media (max-width: 768px) {
+    .card {
+        max-width: 90%;
+        padding: 15px;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .productItem {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .title {
+        font-size: 1.1rem;
+    }
+
+    .productItem {
+        font-size: 0.9rem;
+    }
+}
+
+
+.section {
+    padding: 20px;
+    background: #FCF6E6;
+}
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.deliveryItem {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.statusButton {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.pending {
+    background-color: #007bff;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.confirmButton {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancelButton {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.confirmationModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 300px;
+}
+
+.modalButtons {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #f0f0f0;
+}
