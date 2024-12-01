@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import styles from './CustomerReviewsGraph.module.css'; // Assuming the CSS file is named CustomerReviewsGraph.module.css
 
 const CustomerReviewsGraph = () => {
   const [graphImage, setGraphImage] = useState(null);
@@ -56,45 +57,33 @@ const CustomerReviewsGraph = () => {
   };
 
   if (loading) {
-    return <div>Loading data...</div>;
+    return <div className={styles.loading}>Loading data...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className={styles.error}>{error}</div>;
   }
 
   return (
-    <div className="customer-reviews-graph" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      {graphImage ? (
-        <>
-          <img
-            src={graphImage}
-            alt="Customer Feedback Graph"
-            style={{
-              width: '100%',
-              height: 'auto',
-              borderRadius: '8px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            }}
-          />
-          <div
-            style={{
-              marginTop: '20px',
-              padding: '20px',
-              backgroundColor: '#f9f9f9',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              fontSize: '16px',
-            }}
-          >
-            <strong>Insights: </strong>
-            <p>{generateDynamicInsight()}</p>
-          </div>
-        </>
-      ) : (
-        <p>Loading graph...</p>
-      )}
-    </div>
+    <section className={styles.section}>
+      <div className={styles.graphContainer}>
+        {graphImage ? (
+          <>
+            <img
+              src={graphImage}
+              alt="Customer Feedback Graph"
+              className={styles.customerReviewsGraph}
+            />
+            <div className={styles.feedbackGraph}>
+              <strong>Insights: </strong>
+              <p>{generateDynamicInsight()}</p>
+            </div>
+          </>
+        ) : (
+          <p className={styles.loading}>Loading graph...</p>
+        )}
+      </div>
+    </section>
   );
 };
 

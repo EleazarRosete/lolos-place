@@ -48,7 +48,7 @@ function Feedback() {
     return (
         <section className={styles.section}>
             <header className={styles.feedback}>
-                <h1 className={styles.textStyle}>Feedback</h1>
+                <h1 className={styles.textStyle1}>List of All Feedbacks</h1>
                 <div className={styles.controls}>
                     <button className={styles.sort} onClick={sortById}>
                         Sort by ID ({sortOrder === "desc" ? "Newest First" : "Oldest First"})

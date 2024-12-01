@@ -11,8 +11,11 @@ function Order({ id, name, price, stock, order, total, onAddToOrder, onRemove, i
     return (
         <div className={styles.orderItem}>
             <div className={styles.orderItemDetails}>
-                <h4>{name}</h4>
-                <p>Price: ₱{price}</p>
+                <div className={styles.productDetails1}>
+                    <h4>{name}</h4>
+                    <p>Price: ₱{price}</p>
+                </div>
+                
                 <div className={styles.orderItemActions}>
                     <div className={styles.quantityControl}>
                         <button
@@ -31,7 +34,6 @@ function Order({ id, name, price, stock, order, total, onAddToOrder, onRemove, i
                             +
                         </button>
                     </div>
-                    <span className={styles.orderItemTotal}>₱{total}</span>
                     <button onClick={() => onRemove(index)} className={styles.removeItemBtn}>
                         Remove
                     </button>

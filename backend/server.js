@@ -618,6 +618,75 @@ app.get('/api/order-history', async (req, res) => {
 });
 
 
+app.get('/order/order-history', async (req, res) => {
+  let orderItems = []; // Use 'let' instead of 'const'
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT o.order_id, o.user_id, o.mop, o.total_amount, o.order_type, o.date, o.time, o.delivery, o.reservation_id
+      FROM orders o
+      ORDER BY o.date DESC;
+      `
+    );
+
+    const orderIds = result.rows.map(order => order.order_id);
+    const itemsResult = await pool.query(
+      `
+      SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
+      FROM order_quantities oq
+      JOIN menu_items mi ON oq.menu_id = mi.menu_id
+      WHERE oq.order_id = ANY($1);
+      `,
+      [orderIds]
+    );
+
+    const reservationResult = await pool.query(
+      `
+      SELECT r.reservation_id, r.reservation_date, r.reservation_time
+      FROM reservations r
+      WHERE r.reservation_id = ANY($1);
+      `,
+      [orderIds]
+    );
+
+    const groupedOrders = result.rows.reduce((acc, order) => {
+      const existingOrder = acc.find(o => o.order_id === order.order_id);
+      orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
+
+      const reservationDetails = order.reservation_id
+        ? reservationResult.rows.find(r => r.reservation_id === order.reservation_id)
+        : null;
+
+      if (existingOrder) {
+        existingOrder.items.push(...orderItems); // Add items for the existing order
+      } else {
+        acc.push({
+          order_id: order.order_id,
+          user_id: order.user_id,
+          date: order.date,
+          time: order.time,
+          total_amount: parseFloat(order.total_amount),
+          mop: order.mop,
+          delivery: order.delivery,
+          orderType: order.order_type,
+          reservation_id: order.reservation_id,
+          reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
+          reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
+          items: orderItems,
+        });
+      }
+      return acc;
+    }, []);
+
+    console.log(groupedOrders); // Log the grouped orders if needed
+
+    res.json(groupedOrders);
+  } catch (error) {
+    console.error("Error fetching order history:", error.message);
+    res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
+  }
+});
 
 
 

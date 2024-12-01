@@ -156,26 +156,24 @@ const Delivery = () => {
     }
   };
 
-  const handleConfirmOrder = async () => {
+  // const handleConfirmOrder = async () => {
     
-      
+  //   try {
+  //     const response = await axios.post('http://localhost:5000/api/orders', orderDetails);
   
-    try {
-      const response = await axios.post('http://localhost:5000/api/orders', orderDetails);
+  //     if (response.status === 201) {
+  //       const { order, delivery } = response.data;
+  //       console.log('Order and delivery saved:', order, delivery);
   
-      if (response.status === 201) {
-        const { order, delivery } = response.data;
-        console.log('Order and delivery saved:', order, delivery);
-  
-        setConfirmationPopupVisible(false);
-        setQrCodePopupVisible(true); 
-      } else {
-        console.error('Failed to save order and delivery');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+  //       setConfirmationPopupVisible(false);
+  //       setQrCodePopupVisible(true); 
+  //     } else {
+  //       console.error('Failed to save order and delivery');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   }
+  // };
 
   const closeQrCodePopup = () => {
     setQrCodePopupVisible(false);

@@ -3,21 +3,20 @@
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: #1f1f1f;
-  border-radius: 10px;
+  background-color: transparent   ;
+  border-bottom: 2px dashed #0e0e0e;
+  max-height: 10rem;
   padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: #3e2723;
+  margin-top: 0;
+  padding-top: 0;
+  margin-bottom: 0.1rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   width: 100%;
   overflow: hidden; /* Prevent overflow in both x and y directions */
   box-sizing: border-box; /* Ensure padding is included in the element's total width */
 }
 
-.orderItem:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-}
 
 .orderItemDetails {
   display: flex;
@@ -28,10 +27,16 @@
   padding-right: 1rem; /* Add some space between the details and actions */
 }
 
+.productDetails1{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .productName {
   font-size: 1.2rem;
   font-weight: bold;
-  color: #ffffff;
+  color: #3e2723;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -48,10 +53,11 @@
 .orderItemActions {
   display: flex;
   align-items: center;
+  flex-direction: row;
   gap: 0.5rem;
   flex-wrap: wrap;
-  justify-content: flex-end; /* Align items to the right */
-  width: 30%;
+  justify-content: space-between; /* Align items to the right */
+  width: 100%;
   min-width: 180px; /* Ensure a minimum width for the actions section */
   padding-left: 1rem;
 }
@@ -60,12 +66,13 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
 }
 
 .quantityButton {
   width: 30px;
   height: 30px;
-  background-color: #272727;
+  background-color: #555555;
   color: white;
   font-size: 1.2rem;
   border: none;
@@ -85,9 +92,11 @@
 
 .orderItemQuantity {
   font-size: 1rem;
-  color: white;
+  color: #3e2723;
   text-align: center;
   width: 40px;
+  border-top: 1px solid #0e0e0e;
+  border-bottom: 1px solid #0e0e0e;
 }
 
 .orderItemTotal {
@@ -190,3 +199,5 @@
       font-size: 0.9rem;
   }
 }
+
+

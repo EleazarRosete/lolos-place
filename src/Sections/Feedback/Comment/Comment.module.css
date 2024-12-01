@@ -3,7 +3,7 @@
     max-width: 95%;
     height: auto;
     padding: 1rem;
-    background-color: #62504E; /* Set background color to FEF7E1 */
+    background-color: #FEF7E1; /* Set background color to FEF7E1 */
     border-radius: 0.4rem;
     display: flex;
     flex-direction: column;
@@ -11,6 +11,10 @@
     align-items: flex-start;
     cursor: pointer;
     gap: 0.5rem;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 .header {
@@ -33,14 +37,14 @@
     line-height: 1.6;
     background-color: transparent;
     word-wrap: break-word;
-    color: #F2F2F7; /* Set text color to F2F2F7 */
+    color: #3e2723; /* Set text color to F2F2F7 */
     font-family: 'Arial', sans-serif;
     text-align: start;
 }
 
 .dateStyle {
     font-size: 0.9rem;
-    color: #F2F2F7; /* Set text color to F2F2F7 */
+    color: #3e2723; /* Set text color to F2F2F7 */
     font-family: 'Arial', sans-serif;
     background-color: transparent;
 }
@@ -48,7 +52,7 @@
 .usernameStyle {
     font-size: 1.5rem; /* Increased font size for username */
     font-weight: 600; /* Slightly bold */
-    color: #F2F2F7; /* Set text color to F2F2F7 */
+    color: #3e2723; /* Set text color to F2F2F7 */
     background-color: transparent;
 }
 

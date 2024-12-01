@@ -1,8 +1,7 @@
-
 .cardHeaderTxt {
     font-size: 1rem;
     font-weight: 900;
-    color: #503B36; /* Make header text white */
+    color: #503B36;
 }
 
 /* Card Styles */
@@ -10,12 +9,10 @@
     width: 100%;
     max-width: 320px; /* Small size */
     background-color: #FEF7E1;
-    opacity: 0.8;
     border: 0;
-    color:  #503B36;
+    color: #503B36;
     border-radius: 10px;
     padding: 1rem;
-    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     align-items: start;
@@ -24,36 +21,39 @@
     padding-top: 0;
     margin-top: 0;
     border-radius: 5px;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
+
 }
 
-.stockButton {
-    width: 100%;
+/* Stock Indicator */
+.card .stockIndicator {
+    color: #0e0e0e;
+    letter-spacing: 0.15em;
+    width: 95%;
     height: 10vh;
-    padding: 0.5rem 1rem;
-    border: none;
-    color: #333333; /* White text */
+    padding: 0.5rem;
     font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
+    font-size: 0.8rem;
     border-radius: 5px;
     display: flex;
-    align-items: center; /* Align items vertically */
-    justify-content: space-between; /* Align items to the left */
-    background-color: #8B5E3C; /* Vintage brown color */
-    text-align: left; /* Align text to the left */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     transition: background-color 0.3s ease-in-out;
+    cursor: pointer;
+
 }
 
-.stockButton span {
-    background-color: transparent;
-    margin-left: 10px; /* Space between the label and count */
-}
-
+/* High and Low Stocks Background Colors */
 .highStocks {
-    background-color: #6B8E23; /* Olive green for high stocks (vintage) */
+    background-color: #4CAF50; /* Olive green for high stocks */
+    color: #FFFFFF; /* Text color for high stocks */
 }
 
 .lowStocks {
-    background-color: rgba(178,34,34,0.9); 
-    color: #0e0e0e;/* Firebrick red for low stocks (vintage) */
+    background-color: rgba(178, 34, 34, 0.9); /* Firebrick red for low stocks */
+    color: #0E0E0E; /* Text color for low stocks */
 }

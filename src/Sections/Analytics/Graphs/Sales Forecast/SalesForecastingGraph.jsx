@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import styles from "./SalesForecastingInsightsGraph.module.css";
 
 const SalesForecastingInsights = () => {
   const [forecastData, setForecastData] = useState(null);
@@ -35,7 +36,6 @@ const SalesForecastingInsights = () => {
     fetchSalesForecastData();
   }, []);
 
-  // Function to calculate insights
   const calculateInsights = (data) => {
     if (!data || data.forecast_sales.length === 0) return {};
 
@@ -62,7 +62,6 @@ const SalesForecastingInsights = () => {
       try {
         setLoading(true);
 
-        // Fetch the sales forecast graph image
         const graphResponse = await axios.post(
           "http://localhost:5001/sales-forecast",
           {},
@@ -88,45 +87,42 @@ const SalesForecastingInsights = () => {
   }, []);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div className={styles.section}>
       {loading ? (
-        <p style={{ fontSize: "18px", textAlign: "center" }}>Loading data...</p>
+        <p className={styles.loading}>Loading data...</p>
       ) : error ? (
-        <p style={{ color: "red", textAlign: "center" }}>{error}</p>
+        <p className={styles.error}>{error}</p>
       ) : (
-        <div>
-          {/* Sales Graph */}
-          <div style={{ marginBottom: "20px" }}>
+        <div className={styles.content}>
+          <div className={styles.graphContainer}>
             {graphUrl && (
               <img
                 src={graphUrl}
                 alt="Sales Graph"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                }}
+                className={styles.salesGraph}
               />
             )}
           </div>
-
-          {/* Insights */}
-          <h2 style={{ textAlign: "center", color: "#333" }}>Sales Insights</h2>
-          <div style={{ marginBottom: "20px" }}>
-            <h3>Average Monthly Sales</h3>
-            <p style={{ fontSize: "16px" }}>
-              The average sales for the period are: <strong>${insights.averageSales}</strong>.
-            </p>
-          </div>
-          <div style={{ marginBottom: "20px" }}>
-            <h3>Highest and Lowest Sales</h3>
-            <p style={{ fontSize: "16px" }}>
-              The highest sales occur in <strong>{insights.highestMonth}</strong> with <strong>${insights.highestSales}</strong>.
-            </p>
-            <p style={{ fontSize: "16px" }}>
-              The lowest sales occur in <strong>{insights.lowestMonth}</strong> with <strong>${insights.lowestSales}</strong>.
-            </p>
+          <div className={styles.insightsContainer}>
+            <h2 className={styles.title}>Sales Insights</h2>
+            <div className={styles.insight}>
+              <h3>Average Monthly Sales</h3>
+              <p>
+                The average sales for the period are:{" "}
+                <strong>₱{insights.averageSales}</strong>.
+              </p>
+            </div>
+            <div className={styles.insight}>
+              <h3>Highest and Lowest Sales</h3>
+              <p>
+                The highest sales occur in <strong>{insights.highestMonth}</strong>{" "}
+                with <strong>₱{insights.highestSales}</strong>.
+              </p>
+              <p>
+                The lowest sales occur in <strong>{insights.lowestMonth}</strong>{" "}
+                with <strong>₱{insights.lowestSales}</strong>.
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -135,3 +131,4 @@ const SalesForecastingInsights = () => {
 };
 
 export default SalesForecastingInsights;
+  

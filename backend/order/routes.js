@@ -6,6 +6,8 @@ const router = Router();
 
 router.post('/add-order', controller.addOrder);
 router.get('/get-order', controller.getOrder);
+router.put('/order-served/:order_id', controller.orderServed);
+
 
 
 
@@ -18,8 +20,9 @@ router.get('/get-delivery', controller.getDelivery);
 router.put('/update-delivery/:delivery_id', controller.updateDeliveryStatus);
 
 
-
 router.get('/get-payment', controller.getPayment);
+
+router.get('/get-users', controller.getUsers);
 
 
 module.exports = router;

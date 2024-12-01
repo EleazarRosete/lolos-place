@@ -37,24 +37,25 @@ def highest_selling_products_data():
             with conn.cursor() as cursor:
                 cursor.execute("""
                     WITH product_sales AS (
-                        SELECT 
-                            product_name, 
-                            SUM(quantity_sold) AS total_quantity_sold
-                        FROM sales_data
-                        GROUP BY product_name
-                    ),
-                    ranked_sales AS (
-                        SELECT 
-                            product_name,
-                            total_quantity_sold,
-                            RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
-                        FROM product_sales
-                    )
-                    SELECT 
-                        product_name,
-                        total_quantity_sold
-                    FROM ranked_sales
-                    WHERE rank_desc <= 5;
+    SELECT 
+        product_name, 
+        SUM(quantity_sold) AS total_quantity_sold
+    FROM sales_data
+    GROUP BY product_name
+),
+ranked_sales AS (
+    SELECT 
+        product_name,
+        total_quantity_sold,
+        RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
+    FROM product_sales
+)
+SELECT 
+    product_name,
+    total_quantity_sold
+FROM ranked_sales
+ORDER BY total_quantity_sold DESC;
+
                 """)
                 data = cursor.fetchall()
 
@@ -83,25 +84,26 @@ def highest_selling_products():
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    WITH product_sales AS (
-                        SELECT 
-                            product_name, 
-                            SUM(quantity_sold) AS total_quantity_sold
-                        FROM sales_data
-                        GROUP BY product_name
-                    ),
-                    ranked_sales AS (
-                        SELECT 
-                            product_name,
-                            total_quantity_sold,
-                            RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
-                        FROM product_sales
-                    )
-                    SELECT 
-                        product_name,
-                        total_quantity_sold
-                    FROM ranked_sales
-                    WHERE rank_desc <= 5;
+                   WITH product_sales AS (
+    SELECT 
+        product_name, 
+        SUM(quantity_sold) AS total_quantity_sold
+    FROM sales_data
+    GROUP BY product_name
+),
+ranked_sales AS (
+    SELECT 
+        product_name,
+        total_quantity_sold,
+        RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
+    FROM product_sales
+)
+SELECT 
+    product_name,
+    total_quantity_sold
+FROM ranked_sales
+ORDER BY total_quantity_sold DESC;
+
                 """)
                 data = cursor.fetchall()
 

@@ -1,16 +1,16 @@
 .inventorySection {
-    width: 82%;
+    width: 79%;
     height: 100vh;
     position: fixed;
     top: 0;
-    right: 0;
-    background-color: #FAF6EA; /* Set the background to FAF6EA */
+    left: 21%;
+    background-color: #F4F4F9;
     display: flex;
-    padding: 0.5rem;
-    overflow: hidden;
-    justify-content: center;
     align-items: center;
-    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0;
+    padding: 1rem 1rem 1rem 0;  
 }
 
 /* Custom scrollbar styles for webkit browsers */
@@ -34,7 +34,7 @@
 /* For Firefox */
 .inventoryContainer {
     scrollbar-width: thin; /* Thin scrollbar */
-    scrollbar-color: #3a3a3a #0e0e0e; /* Thumb color and track color */
+    scrollbar-color: #6d4c41 #FEF7E1; /* Thumb color and track color */
 }
 
 
@@ -52,37 +52,47 @@
     background-color: transparent;
     font-size: 2rem;
     font-weight: 800;
+    color: #3e2723;
+    margin: 0;
+    padding: 0;
 }
 
 .addButton {
-    background-color: #503B36; /* Example button color */
+    background-color: #FEF7E1; /* Example button color */
     color: black; /* Button text color */
     border: none; /* Remove border */
     border-radius: 0.2rem; /* Round corners */
     cursor: pointer; /* Change cursor on hover */
-    padding: 0 0.5rem;
+    padding: 0.2rem 1rem;
     margin-left: 0.5rem;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 .itemList {
     width: 100%;
     height: 100%;
-    background-color: #0e0e0e;
+    background-color: #FEF7E1;
     overflow-x: hidden;
     border: 1px solid #8E8588;
+    color: #3e2723;
 }
 
 .itemTable {
     width: 100%;
     border-collapse: collapse; /* Ensures borders are merged */
+    color: #3e2723;
 }
 
 .itemTable th, 
 .itemTable td {
     padding: 0.8rem; /* Add padding to table cells */
     border: 1px solid #8E8588; /* Add border to cells */
-    color: white; /* Text color for better visibility */
+    color: #3e2723; /* Text color for better visibility */
     text-align: left; /* Align text to the left */
+    border-bottom: 1px solid #3e2723;
 }
 
 .itemTable tr:hover {
@@ -144,18 +154,18 @@
 }
 
 .actions {
-    margin: 2rem 0 0.5rem 0;
+    margin: 1rem 0;
     display: flex; /* Align buttons horizontally */
     justify-content: space-between;
     align-items: center;
     background-color: transparent;
-    width: 100%;
+    width: 99%;
     height: 6vh;
 }
 
 .searchInput {
     border: 0;
-    background-color: #503B36;
+    background-color: #FEF7E1;
     border-radius: 4px;
     color: #0e0e0e;
     width: 100%; /* Adjust as needed */
@@ -164,18 +174,26 @@
     border-radius: 0.3rem ;
     text-align: start;
     padding-left: 0.3rem;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 .buttons {
     cursor: pointer;
     height: 100%;
-    background-color: #503B36;
+    background-color: #FEF7E1;
     border: 0;
     font-weight: 400;
     padding: 0.5rem 1rem;
     font-size: 0.6rem;
     margin-left: 0.5rem;
     border-radius: 0.3rem;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 
@@ -197,10 +215,14 @@
 }
 
 .category{
-    background-color: #503B36;
+    background-color: #FEF7E1;
     width: 25%;
     height: 100%;
     padding: 0.2rem 0.1rem;
     border-radius: 0.2rem;
     font-size: 0.8rem;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }

@@ -15,36 +15,49 @@ function Item({ item, onRemove, onEdit }) {
     };
 
     // Format items with commas
-    const formattedItems = item.items
-        ? item.items.map((itm, index) => (
+    const formattedItems = item.items && item.items.length > 0
+    ? item.items
+        .filter(itm => itm.trim() !== '' && itm !== '0') // Filter out blank or '0' items
+        .map((itm, index, filteredItems) => (
             <span key={index}>
                 {itm}
-                {index < item.items.length - 1 && ', '}
+                {index < filteredItems.length - 1 && ', '}
             </span>
         ))
-        : 'no items available';
+    : 'No items available';
+
 
     return (
         <tr className={styles.itemRow}>
-            <td>{item.name}</td>
-            <td>{item.category}</td>
-            <td>{parseFloat(item.price).toFixed(2)}</td>
+            <td>{item.name || 'No name provided'}</td>
+            <td>{item.category || 'No category'}</td>
+            <td>{item.price ? parseFloat(item.price).toFixed(2) : 'No price'}</td>
             <td>
                 {item.img ? (
-                    <img src={item.img} alt={item.name} className={styles.itemImage} />
+                    <img
+                        src={item.img}
+                        alt={item.name || 'Item image'}
+                        className={styles.itemImage}
+                    />
                 ) : (
-                    'no image'
+                    'No image'
                 )}
             </td>
-            <td>{item.description}</td>
-            <td>{formattedItems}</td>
-            <td>{item.stocks || 'no stocks'}</td>
+            <td>{item.description || 'No description available'}</td>
+            <td>{formattedItems || 'No items available'}</td>
+            <td>{item.stocks || 'No stocks'}</td>
             <td>
                 <div className={styles.actionGroup}>
-                    <button onClick={() => onEdit(item)} className={styles.editButton}>
+                    <button
+                        onClick={() => onEdit(item)}
+                        className={styles.editButton}
+                    >
                         Edit
                     </button>
-                    <button onClick={handleConfirmRemove} className={styles.removeButton}>
+                    <button
+                        onClick={handleConfirmRemove}
+                        className={styles.removeButton}
+                    >
                         Remove
                     </button>
                 </div>

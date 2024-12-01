@@ -136,6 +136,8 @@ const Admin = () => { // Fixed component declaration
             {isFeedbackOpen && <Feedback sectionTitle="Feedback Section" />}
             {isAnalyticsOpen && <Analytics sectionTitle="Analytics Section" />}
             {isLogoutOpen && 
+            <div className={styles.modalLogout}>
+
                 <div className={styles.logoutOverlay}>
                     <div className={styles.logout}>
                         <h2>Confirm logout</h2>
@@ -145,7 +147,10 @@ const Admin = () => { // Fixed component declaration
                             <button onClick={cancelLogout} className={styles.cancelButton}>No</button>
                         </div>
                     </div>
-                </div>}
+                </div>
+                </div>
+                }
+                
         </aside>
         </section>  
     );

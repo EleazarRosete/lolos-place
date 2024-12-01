@@ -48,6 +48,40 @@ function POS() {
         order_type:''
     });
 
+
+    useEffect(() => {
+        if (receipt) {
+          const timer = setTimeout(() => {
+            handleCloseReceipt();
+          }, 1000); // 3000ms = 3 seconds
+      
+          return () => clearTimeout(timer); // Cleanup timeout if the component is unmounted or receipt changes
+        }
+      }, [receipt]);
+
+    const calculateServiceCharges = async () => {
+        let totalServiceCharge = 0; // Initialize a variable to accumulate service charges
+      
+        await Promise.all(
+          order.map(async (orderedItem) => {
+            const product = products.find(p => p.menu_id === orderedItem.menu_id); // Find the product based on menu_id
+            if (product) {
+              const serviceChargePerItem = product.price * 0.1; // Calculate 10% service charge per item
+              totalServiceCharge += serviceChargePerItem * orderedItem.quantity; // Multiply by quantity to get the total service charge for this order
+            }
+          })
+        );
+        
+        setServiceCharge(totalServiceCharge.toFixed(2)); // Update the state with the accumulated service charge
+      };
+      
+      
+      useEffect(() => {
+        if (order.length > 0) {
+          calculateServiceCharges();
+        }
+      }, [order]);
+
     const handleOpenModal = () => {
         setShowModal(true); // Open the confirmation modal
         ifPaid();
@@ -97,14 +131,17 @@ function POS() {
                     headers: { "Content-Type": "application/json" },
                 });
                 const jsonData = await response.json();
-                setProducts(jsonData);
-                setFilteredProducts(jsonData);
+        
+                // Sort the products alphabetically by name
+                const sortedData = jsonData.sort((a, b) => a.name.localeCompare(b.name));
+        
+                setProducts(sortedData);
+                setFilteredProducts(sortedData);
             } catch (err) {
                 console.error('Error fetching products:', err.message);
             }
-        
-        
         };
+        
 
         getProducts();
     }, []);
@@ -477,13 +514,19 @@ function POS() {
                 <div className={styles.navbar}>
                     <form className={styles.forms}>
                         <div className={styles.searchContainer}>
-                            <input
-                                type="text"
-                                className={styles.searchBar}
-                                placeholder="Search..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)} // Change here
-                            />
+                        <input
+    type="text"
+    className={styles.searchBar}
+    placeholder="Search..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();  // Disable Enter key action
+        }
+    }}
+/>
+
                         </div>
 
                         <div className={styles.filterContainer}>
@@ -559,6 +602,7 @@ function POS() {
             </div>
 
             {orderDetails && (
+                <div className={styles.modalPOS}>
                 <div className={styles.orderDetails}>
                     <h2 className={styles.orderDetailsHeader}>Order Summary</h2>
 
@@ -608,11 +652,13 @@ function POS() {
                         Cancel
                     </button>
                 </div>
+                </div>
             )}
 
 {CashDetails && (
+                    <div className={styles.modalPOS}>
         <div className={styles.paymentDetails}>
-          <h3>Cash Payment</h3>
+          <h1 className={styles.cashHeader}>Cash Payment</h1>
           <div className={styles.contentContainer}>
             <div className={styles.calculator}>
               <div className={styles.display}>
@@ -650,11 +696,13 @@ function POS() {
 
             <div className={styles.details}>
               <div className={styles.paymentInfo}>
+              <h1 className={styles.headerPayment}>Order Items:</h1>
+
                 <div className={styles.orderItems}>
                   {order.length > 0 ? (
                     order.map((orders, index) => (
                       <div key={orders.menu_id} className={styles.orderItem}>
-                        <p><strong>{orders.name}</strong></p>
+                        <p className={styles.txtStyles}><strong>{orders.name}</strong></p>
                         <p>Qty: {orders.quantity}</p>
                         <p>Price: ₱{orders.price}</p>
                         <p>Subtotal: ₱{orders.total}</p>
@@ -665,14 +713,17 @@ function POS() {
                   )}
                 </div>
                 <h3 className={styles.sum}>
-                  Order Total: ₱{order.reduce((total, item) => total + item.total, 0)}
+                  Order Total: ₱{order.reduce((total, item) => total + item.total, 0).toFixed(2)}
                 </h3>
                 <h3 className={styles.sum}>
-                  Service charge(10%): ₱{order.reduce((total, item) => (total + item.total) * 0.1, 0)}
+                  Service charge(10%): ₱{serviceCharge}
                 </h3>
                 <h3 className={styles.sum}>
-                  Total Amount: ₱{order.reduce((total, item) => total + item.total + (total + item.total) * 0.1, 0)}
-                </h3>
+  Total Amount: ₱{
+    (order.reduce((total, item) => total + item.total, 0) + parseFloat(serviceCharge)).toFixed(2)
+  }
+</h3>
+
                 <h3 className={styles.sum}>Change: ₱{change}</h3>
               </div>
 
@@ -684,6 +735,7 @@ function POS() {
                 {/* Proceed button, disabled until confirmed */}
                 <button 
                   onClick={handleOpenModal} 
+                  className={styles.cancelPaymentButton}
                 >
                   PROCEED
                 </button>
@@ -691,41 +743,30 @@ function POS() {
             </div>
           </div>
         </div>
+        </div>
+
       )}
 
                 {receipt && (
+                    <div className={styles.modalPOS}>
+
                     <div className={styles.orderReceipt}>
-                        <h1>THANK YOU!</h1>
-                        {order.length > 0 ? (
-                            order.map((orders, index) => (
-                                <div key={orders.menu_id} className={styles.orderItemReceipt}>
-                                    <p><strong>{orders.name}</strong></p>
-                                    <p>Qty: {orders.quantity}</p>
-                                    <p>Price: ₱{orders.price}</p>
-                                    <p>Subtotal: ₱{orders.total}</p>
-                                </div>
-                            ))
-                        ) : (
-                            <p className={styles.pText}>No orders yet</p>
-                        )}
-                        <h2>Reference no.{}</h2>
-                        <div className={styles.navButton}>
-                            <button onClick={handleCloseReceipt}>CLOSE</button>
-                            <button>PRINT</button>
-                        </div>
-                       
+                        <h1>Successful!</h1>
                     </div>
+                    </div>
+
                 )}
+    
 
                       {/* Modal for confirmation */}
       {showModal && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modal}>
+        <div className={styles.modalPOS}>
+          <div className={styles.modalConfirmation}>
             <h2>Confirm Payment</h2>
             <p>Are you sure you want to proceed with the payment?</p>
             <div className={styles.modalButtons}>
-              <button onClick={handleCloseModal}>CANCEL</button>
-              <button onClick={submitOrder } disabled={loading}>CONTINUE</button>
+              <button onClick={handleCloseModal} className={styles.cancelModalConfirmation}>CANCEL</button>
+              <button onClick={submitOrder } disabled={loading} className={styles.cancelModalConfirmation}>CONTINUE</button>
             </div>
           </div>
         </div>

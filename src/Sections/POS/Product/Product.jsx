@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import styles from './Product.module.css';
 
 function Product({ menu_id, name, price, image, description, items, stock, onAddToOrder }) {   
-    const [quantity, setQuantity] = useState();  // Default quantity to 1
+    const [quantity, setQuantity] = useState("");  // Default quantity to an empty string
     const [remainingStock, setRemainingStock] = useState(stock);  // Manage local stock state
 
     const handleAddToOrder = () => {
+        // Validate quantity before proceeding
+        if (!quantity || quantity <= 0) {
+            alert("Please enter a valid quantity!");
+            return;
+        }
+
         if (quantity <= remainingStock) {
             onAddToOrder(menu_id, name, price, remainingStock, quantity);
             // Reduce stock by quantity after adding to order
@@ -21,14 +27,14 @@ function Product({ menu_id, name, price, image, description, items, stock, onAdd
         <div className={styles.productCard}>
             <img src={image} alt={name} className={styles.productImage} />
             <div className={styles.productDetails}>
-                <h3 className={styles.productText}>{name}</h3>
-                <p className={styles.productText}>{description}</p>
-                <p className={styles.productText}>₱{price}</p>
-                <p className={styles.productText}>Stock: {remainingStock}</p>
+                <h3 className={styles.productText1}>{name}</h3>
+                <p className={styles.productText1}>{description}</p>
+                <p className={styles.productText1}>₱{price}</p>
+                <p className={styles.productText1}>Stock: {remainingStock}</p>
                 
                 {items && items.length > 0 && (
                     <div className={styles.items}>
-                        <h4 className={styles.productText}>Items in this Bundle:</h4>
+                        <h4 className={styles.productText2}>Items in this Bundle:</h4>
                         <ul>
                             {items.map((item, index) => (
                                 <li key={index} className={styles.itemsList}>
@@ -48,7 +54,7 @@ function Product({ menu_id, name, price, image, description, items, stock, onAdd
                     placeholder="Quantity"
                     className={styles.productQuantity}
                 />
-                <button onClick={handleAddToOrder} className={styles.addToOrderBtn}>
+                <button onClick={handleAddToOrder} className={styles.addToOrderBtn1}>
                     Add to Order
                 </button>
             </div>

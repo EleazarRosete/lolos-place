@@ -14,7 +14,10 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
 
     useEffect(() => {
         if (item) {
-            setFormData(item);
+            setFormData({
+                ...item,
+                items: item.items || [''], // Ensure items is always an array
+            });
         } else {
             resetFormData();
         }
@@ -80,13 +83,19 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Filter out blank items
+        const filteredItems = formData.items.filter(item => item.trim() !== '');
+
+        const updatedFormData = { ...formData, items: filteredItems };
+
         try {
             if (item) {
-                await handleUpdateItem(formData);
-                onUpdateItem(formData);
+                await handleUpdateItem(updatedFormData);
+                onUpdateItem(updatedFormData);
             } else {
-                await handleAddItem(formData);
-                onAddItem(formData);
+                await handleAddItem(updatedFormData);
+                onAddItem(updatedFormData);
             }
             onClose();
         } catch (err) {
@@ -134,79 +143,101 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
     };
 
     return (
-        <div className={styles.modal}>
-            <div className={styles.modalContent}>
-                <h2>{item ? 'Edit Item' : 'Add Item'}</h2>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder="Product Name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="text"
-                        name="category"
-                        placeholder="Category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="number"
-                        name="price"
-                        placeholder="Price"
-                        value={formData.price}
-                        onChange={handleChange}
-                        required
-                    />
-                    <input
-                        type="file"
-                        name="img"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                    />
-                    <input
-                        type="text"
-                        name="description"
-                        placeholder="Description"
-                        value={formData.description}
-                        onChange={handleChange}
-                    />
-                    <div>
-                        {(formData.items && Array.isArray(formData.items)) ? (
-                            formData.items.map((input, index) => (
-                                <div key={index}>
-                                    <input
-                                        type="text"
-                                        value={input}
-                                        onChange={(e) => handleItemChange(index, e)}
-                                    />
-                                    <button onClick={(e) => removeInput(index, e)}>Remove</button>
-                                </div>
-                            ))
-                        ) : (
-                            <div>No items available</div>
-                        )}
-    <button onClick={addInput}>Add Input</button>
-                    </div>
-                    <input
-                        type="number"
-                        name="stocks"
-                        placeholder="Stocks"
-                        value={formData.stocks}
-                        onChange={handleChange}
-                        required
-                    />
-                    <button type="submit" className={styles.submitButton}>
-                        {item ? 'Update Item' : 'Add Item'}
-                    </button>
-                </form>
-                <button className={styles.closeButton} onClick={onClose}>
-                    Close
-                </button>
+        <div className={styles.modalInventory}>
+            <div className={styles.modal}>
+                <div className={styles.modalContent}>
+                    <h2 className={styles.modalHeader}>{item ? 'Edit Item' : 'Add Item'}</h2>
+                    <form onSubmit={handleSubmit} className={styles.modalForm}>
+                        <label>Product Name:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            className={styles.modalInput}
+                            placeholder="Product Name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                        <label>Category:</label>
+                        <input
+                            type="text"
+                            name="category"
+                            className={styles.modalInput}
+                            placeholder="Category"
+                            value={formData.category}
+                            onChange={handleChange}
+                            required
+                        />
+                        <label>Price:</label>
+                        <input
+                            type="number"
+                            name="price"
+                            className={styles.modalInput}
+                            placeholder="Price"
+                            value={formData.price}
+                            onChange={handleChange}
+                            required
+                        />
+                        <label>Insert Image:</label>
+                        <input
+                            type="file"
+                            name="img"
+                            className={styles.modalInput}
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                        />
+                        <label>Description:</label>
+                        <textarea
+                            name="description"
+                            className={styles.modalInput}
+                            placeholder="Description"
+                            value={formData.description}
+                            onChange={handleChange}
+                        />
+                        <label>Product Items (*If bundle):</label>
+                        <div className={styles.itemsContainer}>
+                            {formData.items.length > 0 ? (
+                                formData.items.map((input, index) => (
+                                    <div key={index} className={styles.itemRow}>
+                                        <input
+                                            type="text"
+                                            className={styles.modalInput}
+                                            value={input}
+                                            onChange={(e) => handleItemChange(index, e)}
+                                        />
+                                        <button onClick={(e) => removeInput(index, e)} className={styles.buttonCancel}>
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No items available</p>
+                            )}
+                            <button onClick={addInput} className={styles.buttonSubmit}>
+                                Add Input
+                            </button>
+                        </div>
+
+                        <label>Stocks:</label>
+                        <input
+                            type="number"
+                            name="stocks"
+                            className={styles.modalInput}
+                            placeholder="Stocks"
+                            value={formData.stocks}
+                            onChange={handleChange}
+                            required
+                        />
+                        <div className={styles.buttonGroup}>
+                            <button type="submit" className={styles.buttonSubmit}>
+                                {item ? 'Update Item' : 'Add Item'}
+                            </button>
+                            <button className={styles.buttonCancel} onClick={onClose}>
+                                Close
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

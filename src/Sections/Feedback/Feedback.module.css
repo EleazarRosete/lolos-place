@@ -1,24 +1,26 @@
 .section{
-    width: 82%;
+    width: 79%;
     height: 100vh;
     position: fixed;
     top: 0;
-    right: 0;
-    background-color: #FAF6EA; /* Set the background to FAF6EA */
+    left: 21%;
+    background-color: #F4F4F9;
     display: flex;
-    padding: 0.5rem;
-    overflow: hidden;
-    justify-content: center;
     align-items: center;
-    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    margin: 0;
+    padding: 1rem 1rem 1rem 0;
 }
 
 .feedback{
-    width: 99%;
+    width: 100%;
     background-color: transparent;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 1rem;
+    margin: 0;
 }
 
 .textStyle, .textStyle1{
@@ -29,36 +31,42 @@
 }
 
 .textStyle1{
-    position: relative;
-    top: 50%;
-    opacity: 0.25;
-    font-weight: 400;
+    background-color: transparent;
+    color: #3e2723;
 }
 
-.sort{
-    background-color: #62504E; /* Set the button background color to #62504E */
+.controls .sort{
+    background-color: #FEF7E1; /* Set the button background color to #62504E */
     border: 0;
     padding: 0.2rem 0.5rem;
     cursor: pointer;
     border-radius: 0.3rem;
     transition: 0.5s ease-in-out;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
-.sort:hover{
-    background-color: #7a6a62; /* Lighter shade of #62504E for hover effect */
+.controls .sort:hover{
+    background-color: #F9E6C9; /* Lighter shade of #62504E for hover effect */
 }
 
-.filter{
-    background-color: #62504E; /* Set the filter button background color to #62504E */
+.controls .filter{
+    background-color: #FEF7E1; /* Set the filter button background color to #62504E */
     border: 0;
     padding: 0.2rem 0.5rem;
     cursor: pointer;
     border-radius: 0.3rem;
     transition: 0.5s ease-in-out;
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
-.filter:hover{
-    background-color: #7a6a62; /* Lighter shade of #62504E for hover effect */
+.controls .filter:hover{
+    background-color: #F9E6C9; /* Lighter shade of #62504E for hover effect */
 }
 
 

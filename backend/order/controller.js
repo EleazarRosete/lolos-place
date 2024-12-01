@@ -330,6 +330,39 @@ const updateDeliveryStatus = (req, res) => {
 };
 
 
+
+const getUsers = (req, res) => {
+    pool.query(queries.getUsers, (error, results) => {
+        if (error) {
+            console.error('Error fetching Product:', error);
+            return res.status(500).json({ error: 'Error fetching Product' });
+        }
+        res.status(200).json(results.rows);
+    });
+};
+
+const orderServed = (req, res) => {
+    const { order_id } = req.params; // Extract order_id from URL parameter
+
+    pool.query(queries.orderServed, [order_id], (error, results) => {
+        if (error) {
+            console.error('Error updating order status:', error);
+            return res.status(500).json({ error: 'Failed to update order status' });
+        }
+
+        if (results.rowCount === 0) {
+            return res.status(404).json({ message: 'Order ID not found' });
+        }
+
+        res.status(200).json({
+            message: 'Order status updated successfully',
+            updatedOrder: results.rows[0], // The updated order record
+        });
+    });
+};
+
+
+
 module.exports = {
     addProduct,
     getProduct,
@@ -347,4 +380,6 @@ module.exports = {
     getPayment,
     updateDeliveryStatus,
     cancelReservation,
+    getUsers,
+    orderServed,
 };

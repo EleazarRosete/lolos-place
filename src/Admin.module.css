@@ -101,11 +101,17 @@ nav {
 }
 
 .logout {
-  background-color: #0e0e0e;
-  padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0rem 0rem 1rem #242424;
-  text-align: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #FEF7E1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 20%;
+  padding: 20px;
+  z-index: 1000;
 }
 
 .logout h2,
@@ -270,4 +276,14 @@ nav {
   .logout {
     width: 90%;
   }
+}
+
+.logoutOverlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(14, 14, 14, 0.5);
+  z-index: 100;
 }

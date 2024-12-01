@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import styles from "./CustomerPeakHoursGraph.module.css";
 
 const CustomerPeakHoursGraph = () => {
   const [graphUrl, setGraphUrl] = useState(null);
@@ -22,7 +23,9 @@ const CustomerPeakHoursGraph = () => {
         setGraphUrl(imageUrl);
 
         // Fetch the peak hours data
-        const dataResponse = await axios.get("http://localhost:5001/peak-hours-data");
+        const dataResponse = await axios.get(
+          "http://localhost:5001/peak-hours-data"
+        );
         setPeakHoursData(dataResponse.data);
 
         setLoading(false);
@@ -43,64 +46,45 @@ const CustomerPeakHoursGraph = () => {
   };
 
   const generatePeakHourInsight = () => {
-    if (!peakHoursData) return "Loading insights...";
-
+    if (!peakHoursData) {
+      return "Loading insights...";
+    }
+  
     const highestOrders = peakHoursData.highest_orders;
-
-    return Object.entries(highestOrders)
-      .map(([day, { hour, order_count }]) => {
+    const weekOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+    return weekOrder
+      .map((day) => {
+        if (!highestOrders[day] || highestOrders[day].order_count === 0) {
+          return `${day}: No orders`;
+        }
+  
+        const { hour, order_count } = highestOrders[day];
         const time = formatHour(hour);
         return `${day}: Peak orders (${order_count}) at ${time}`;
       })
-      .join(" | ");
+      .join("<br>"); // Use <br> for line breaks
   };
-
+  
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div className={styles.section}>
       {loading ? (
-        <p style={{ fontSize: "18px", textAlign: "center", color: "#333" }}>
-          Loading graph and insights...
-        </p>
+        <p className={styles.loading}>Loading graph and insights...</p>
       ) : error ? (
-        <p
-          style={{
-            color: "red",
-            textAlign: "center",
-            fontSize: "18px",
-            fontWeight: "bold",
-          }}
-        >
-          {error}
-        </p>
+        <p className={styles.error}>{error}</p>
       ) : (
-        <div>
+        <div className={styles.graphContainer}>
           {graphUrl && (
             <img
               src={graphUrl}
               alt="Customer Peak Hours Graph"
-              style={{
-                width: "100%",
-                height: "auto",
-                borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              }}
+              className={styles.customerReviewsGraph}
             />
           )}
-          <div
-            className="peak-hour-insight"
-            style={{
-              marginTop: "20px",
-              padding: "15px",
-              backgroundColor: "#f9f9f9",
-              borderRadius: "8px",
-              color: "#333",
-              fontStyle: "italic",
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-              fontSize: "16px",
-            }}
-          >
-            <strong>Insights:</strong> {generatePeakHourInsight()}
-          </div>
+        <div className={styles.feedbackGraph}>
+          <strong>Insights:</strong>
+          <p dangerouslySetInnerHTML={{ __html: generatePeakHourInsight() }} />
+        </div>
         </div>
       )}
     </div>

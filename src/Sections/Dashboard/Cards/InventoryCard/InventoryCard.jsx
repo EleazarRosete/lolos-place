@@ -13,7 +13,6 @@ function InventoryCard() {
             const jsonData = await response.json();
             console.log("Fetched products:", jsonData); // Debug log
             setProduct(jsonData); // Update product state with fetched data
-
         } catch (err) {
             console.error('Error fetching products:', err.message);
         }
@@ -21,13 +20,9 @@ function InventoryCard() {
 
     const stockLevel = () => {
         if (product.length > 0) {
-            return "LOW STOCKS"; // If there are low stock items
+            return `LOW STOCKS - ${product.length} Products`; // If there are low stock items
         }
         return "HIGH STOCKS"; // If there are no low stock items
-    };
-
-    const numberOfLowStocks = () => {
-        return product.length > 0 ? <span className={styles.lowStockCount}>{product.length}</span> : <span className={styles.lowStockCount}>0</span>; // Display count of low stock items
     };
 
     useEffect(() => {
@@ -35,16 +30,14 @@ function InventoryCard() {
     }, []); // Fetch products when component mounts
 
     return (
-            <div className={styles.card}>
-                <h1 className={styles.cardHeaderTxt}>Stock Levels: <span>{stockLevel()}</span></h1>
-                <button 
-                    className={`${styles.stockButton} ${stockLevel() === "HIGH STOCKS" ? styles.highStocks : styles.lowStocks}`}
-                disabled
-                >
-                    # of products
-                    <span className={styles.stockButtonText}>{numberOfLowStocks()}</span>
-                </button>
+        <div className={styles.card}>
+            <h1 className={styles.cardHeaderTxt}>Stock Levels:</h1>
+            <div 
+                className={`${styles.stockIndicator} ${product.length === 0 ? styles.highStocks : styles.lowStocks}`}
+            >
+                {stockLevel()}
             </div>
+        </div>
     );
 }
 

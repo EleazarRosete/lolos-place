@@ -10,7 +10,7 @@ function Inventory() {
     const [showConfirmRemove, setShowConfirmRemove] = useState(false);
     const [itemToRemove, setItemToRemove] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
     const [filteredItems, setFilteredItems] = useState([]);
     const [categories, setCategories] = useState([]);
     const [sortByQuantityAsc, setSortByQuantityAsc] = useState(true);
@@ -23,15 +23,17 @@ function Inventory() {
                 headers: { "Content-Type": "application/json" },
             });
             const jsonData = await response.json();
-            console.log("Fetched products:", jsonData); // Debug log
-            setProduct(jsonData);
-            setFilteredItems(jsonData);
-            extractCategories(jsonData);
+            console.log("Fetched products:", jsonData);
+
+            const sortedData = jsonData.sort((a, b) => a.name.localeCompare(b.name));
+            setProduct(sortedData);
+            setFilteredItems(sortedData);
+            extractCategories(sortedData);
         } catch (err) {
             console.error('Error fetching products:', err.message);
         }
     };
-
+    
     const extractCategories = (products) => {
         const uniqueCategories = [...new Set(products.map(item => item.category))];
         setCategories(uniqueCategories);
@@ -41,9 +43,23 @@ function Inventory() {
         getProduct();
     }, []);
 
+    useEffect(() => {
+        const filtered = product.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredItems(filtered);
+    }, [searchTerm, product]);
+
+    useEffect(() => {
+        const filtered = selectedCategory === "All" 
+            ? product 
+            : product.filter(item => item.category === selectedCategory);
+        setFilteredItems(filtered);
+    }, [selectedCategory, product]);
+
     const handleAddItem = (newItem) => {
         const newItemsList = [...product, { menu_id: Date.now(), ...newItem }];
-        console.log("Added new item:", newItem); // Debug log
+        console.log("Added new item:", newItem);
         setProduct(newItemsList);
         setFilteredItems(newItemsList);
         extractCategories(newItemsList);
@@ -54,13 +70,11 @@ function Inventory() {
         try {
             await fetch(`http://localhost:5000/menu/delete-product/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
 
             const updatedItems = product.filter(item => item.menu_id !== id);
-            console.log("Removed item with ID:", id); // Debug log
+            console.log("Removed item with ID:", id);
             setProduct(updatedItems);
             setFilteredItems(updatedItems);
             extractCategories(updatedItems);
@@ -92,49 +106,20 @@ function Inventory() {
     };
 
     const handleSortByName = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => {
-            return sortByNameAsc
-                ? a.name.localeCompare(b.name) // A-Z
-                : b.name.localeCompare(a.name); // Z-A
-        });
+        const sortedItems = [...filteredItems].sort((a, b) => 
+            sortByNameAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+        );
         setFilteredItems(sortedItems);
-        setSortByNameAsc(!sortByNameAsc); // Toggle sorting direction
+        setSortByNameAsc(!sortByNameAsc);
     };
 
     const handleSortByQuantity = () => {
-        const sortedItems = [...filteredItems].sort((a, b) => {
-            return sortByQuantityAsc
-                ? a.stocks - b.stocks // Lowest to Highest
-                : b.stocks - a.stocks; // Highest to Lowest
-        });
+        const sortedItems = [...filteredItems].sort((a, b) => 
+            sortByQuantityAsc ? a.stocks - b.stocks : b.stocks - a.stocks
+        );
         setFilteredItems(sortedItems);
-        setSortByQuantityAsc(!sortByQuantityAsc); // Toggle sorting direction
+        setSortByQuantityAsc(!sortByQuantityAsc);
     };
-
-    const handleSortByCategory = (e) => {
-        const category = e.target.value;
-        setSelectedCategory(category);
-
-        if (category === "All" || category === "") {
-            setFilteredItems(product);
-        } else {
-            const filtered = product.filter(item => item.category === category);
-            setFilteredItems(filtered);
-        }
-    };
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            const filtered = product.filter(item =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-            setFilteredItems(filtered.length > 0 ? filtered : product);
-        }, 300);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [searchTerm, product]);
 
     return (
         <section className={styles.inventorySection}>
@@ -157,7 +142,7 @@ function Inventory() {
                         <select
                             className={styles.category}
                             value={selectedCategory}
-                            onChange={handleSortByCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
                         >
                             <option value="All">All</option>
                             {categories.map((category, index) => (

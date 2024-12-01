@@ -35,9 +35,16 @@ const getDeliveryByID = 'SELECT * FROM deliveries WHERE order_id = $1;';
 const getPayment = `SELECT * FROM payment;`;
 
 
-const updateDeliveryStatus = `UPDATE deliveries SET delivery_status = 'Delivered' WHERE order_id = $1 RETURNING *;`;
+const updateDeliveryStatus = `UPDATE deliveries SET delivery_status = 'Delivered' WHERE delivery_id = $1 RETURNING *;`;
 
 
+
+const getUsers = `SELECT * FROM users;`;
+
+const orderServed = `UPDATE orders
+SET status = 'served'
+WHERE order_id = $1;
+`;
 
 module.exports = {
     addProduct,
@@ -58,4 +65,6 @@ module.exports = {
     getPayment,
     updateDeliveryStatus,
     cancelReservation,
+    getUsers,
+    orderServed,
 };

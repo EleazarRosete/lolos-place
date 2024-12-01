@@ -53,12 +53,12 @@ function SalesTodayCard() {
     return (
         <div className={styles.card}>
             <h1 className={styles.cardHeaderTxt}>Sales Today:</h1>
-            <button className={styles.salesButton}>
-                {formatCurrency(salesToday)} 
-            </button>
+            <div className={styles.salesText}>
+                {formatCurrency(salesToday)}
+            </div>
         </div>
-
     );
+    
 }
 
 export default SalesTodayCard;

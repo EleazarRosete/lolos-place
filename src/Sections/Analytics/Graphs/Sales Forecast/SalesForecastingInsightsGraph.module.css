@@ -1,0 +1,80 @@
+.section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    background-color: transparent;
+}
+
+.loading,
+.error {
+    color: #3e2723;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.graphContainer {
+    background-color: transparent;
+    position: relative;
+    width: 60%; /* Controls the width of the container */
+    height: 400px; /* Set a specific height to match the graph's size */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+}
+
+.salesGraph {
+    width: 100%; /* Takes the full width of the container */
+    height: 100%; /* Takes the full height of the container */
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 0;
+    padding: 0;
+}
+
+.insightsContainer {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 200px;
+    text-align: left;
+}
+
+.title {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.insight {
+    margin-bottom: 1rem;
+}
+
+.insight h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #444;
+}
+
+.insight p {
+    font-size: 0.8rem;
+    color: #555;
+}
