@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import styles from './POS.module.css';
 import Product from './Product/Product.jsx';
 import Order from './Order/Order.jsx';
+import Successful from '../Payment Result/Successful.jsx';
+import Failed from '../Payment Result/Failed.jsx';
 
 function POS() {
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [serviceCharge, setServiceCharge] = useState(0);
@@ -47,17 +51,7 @@ function POS() {
         mode_of_payment:'',
         order_type:''
     });
-
-
-    useEffect(() => {
-        if (receipt) {
-          const timer = setTimeout(() => {
-            handleCloseReceipt();
-          }, 1000); // 3000ms = 3 seconds
       
-          return () => clearTimeout(timer); // Cleanup timeout if the component is unmounted or receipt changes
-        }
-      }, [receipt]);
 
     const calculateServiceCharges = async () => {
         let totalServiceCharge = 0; // Initialize a variable to accumulate service charges
@@ -90,7 +84,15 @@ function POS() {
       const handleCloseModal = () => {
         setShowModal(false); // Close the modal without submitting
       };
-    
+
+      const handleCloseModal1 = () => {
+        setReceipt(false);
+        setPaidOrder([]);
+        setOrder([]);
+        setSalesData([]);
+      };
+      
+      
       const handleConfirmPayment = () => {
         submitOrder(); // Proceed with the order submission
         setShowModal(false); // Close the modal after submitting
@@ -123,29 +125,44 @@ function POS() {
         }
     };
 
-    useEffect(() => {
         const getProducts = async () => {
             try {
                 const response = await fetch("http://localhost:5000/menu/get-product", {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
                 const jsonData = await response.json();
-        
+    
                 // Sort the products alphabetically by name
                 const sortedData = jsonData.sort((a, b) => a.name.localeCompare(b.name));
-        
+    
                 setProducts(sortedData);
                 setFilteredProducts(sortedData);
             } catch (err) {
                 console.error('Error fetching products:', err.message);
             }
         };
-        
 
-        getProducts();
-    }, []);
+      useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await getProducts();
+      } catch (err) {
+        setError('An error occurred while fetching data.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchData();
+  }, []);
+    
     useEffect(() => {
         const getCategories = async () => {
             try {
@@ -354,18 +371,6 @@ function POS() {
                 
                 
     
-
-    
-                // Fetch updated payment data
-                const paymentResponse = await fetch("http://localhost:5000/payment/get-payment", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-                const jsonData = await paymentResponse.json();
-                setPayment(jsonData);
-    
-                setPaymentID(jsonData[jsonData.length - 1].payment_id);  // Assuming jsonData contains the payment array
-    
                 // Reset order-related states
                 setAmount(0);
                 setIfDelivery('false');
@@ -389,45 +394,102 @@ function POS() {
     
 
     
-    const handleCloseReceipt  = () =>{
-        setReceipt(false);
-        setOrder([]);
-        setPaidOrder([]); // Clear paidOrder
-    }
-
-
     const handleGCashPayment = async () => {
         const admin = 14;
-        
-        const body = {
-            user_id: admin,
-            lineItems: order.map(product => ({
-                quantity: product.quantity,
-                name: product.name,
-                price: product.price
-            })),
-        };
     
+        
+
+        const orderedItem = order[0];
+        if (!orderedItem) {
+            console.error("No ordered item found.");
+            return;
+        }
+    
+        const product = products.find((p) => p.menu_id === orderedItem.menu_id);
+        if (!product) {
+            console.error("No product found for menu_id:", orderedItem.menu_id);
+            return;
+        }
+    
+        const price = parseFloat(product?.price) || 0; // Ensure price is a valid number
+        const updatedSalesData = {
+            amount: parseFloat((orderedItem.quantity * price).toFixed(2)),
+            service_charge: parseFloat((price * 0.1).toFixed(2)),
+            gross_sales: parseFloat((price + price * 0.1) * orderedItem.quantity),
+            product_name: product.name,
+            category: product.category,
+            quantity_sold: orderedItem.quantity,
+            price_per_unit: parseFloat(price.toFixed(2)),
+            mode_of_payment: paymentMethod,
+            order_type: orderType,
+        };
+        
         try {
-            const response = await fetch('http://localhost:5000/api/create-gcash-checkout-session', {
-                method: 'POST',  // Ensure POST method is used
+            // Step 1: Create checkout session
+            const response = await fetch("http://localhost:5000/api/create-gcash-checkout-session", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',  // Set the content type to JSON
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify(body),  // Convert body to JSON
+                body: JSON.stringify({
+                    user_id: admin,
+                    lineItems: order.map((product) => ({
+                        quantity: product.quantity,
+                        name: product.name,
+                        price: ((parseFloat(product.price) + parseFloat(product.price) * 0.1) || 0).toFixed(2),
+                    })),
+                }),
             });
     
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`); // Handle non-200 status codes
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
     
-            const responseData = await response.json(); // Parse the response as JSON
-            const { url } = responseData; // Extract 'url' from response
-            window.location.href = url;
+            const responseData = await response.json();
+            const { url } = responseData;
+    
+            if (!url) {
+                console.error("No URL received from the API:", responseData);
+                return;
+            }
+    
+            // Step 2: Add data to temp_data table
+            const tempDataResponse = await fetch("http://localhost:5000/order/add-temp-data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    order: order, // Send the order data as text[]
+                    salesdata: [JSON.stringify(updatedSalesData)], // Send sales data as text[]
+                    paidorder: [
+                        JSON.stringify({
+                            mop: paymentMethod,
+                            total_amount: amount,
+                            delivery: ifDelivery === "true",
+                            reservation_id: reservationID,
+                            order_type: orderType,
+                            items: order,
+                        }),
+                    ], // Send paid order as text[]
+                }),
+            });
+    
+            if (!tempDataResponse.ok) {
+                throw new Error(`Error adding temp data! status: ${tempDataResponse.status}`);
+            }
+    
+            const tempDataResponseData = await tempDataResponse.json();
+            console.log("Temporary data added successfully:", tempDataResponseData);
+    
+            // Step 3: Redirect to the payment provider
+            window.location.href = url; // Redirect to the GCash payment provider
+    
         } catch (error) {
-            console.error('Error initiating payment:', error);
+            console.error("Error during payment and data addition:", error);
         }
     };
+    
     
 
     const processOrder = () => {
@@ -479,27 +541,6 @@ function POS() {
     const selectOrderType = (e) => {
         setOrderType(e.target.value)
         console.log(orderType);
-    }
-
-    const makePaymentGCash = async () => {
-        const body = {
-            user_id: customer.id,
-            lineItems: cartItems.map(product => ({
-                quantity: product.quantity,
-                name: product.name,
-                price: product.price
-            })),
-        };
-    
-        try {
-            const response = await axios.post('http://localhost:5000/payment/create-gcash-checkout-session', body);
-    
-            const { url } = response.data;
-    
-            window.location.href = url;
-        } catch (error) {
-            console.error('Error initiating payment:', error);
-        }
     }
 
     const ifPaid = () =>{
@@ -752,6 +793,7 @@ function POS() {
 
                     <div className={styles.orderReceipt}>
                         <h1>Successful!</h1>
+                        <button className={styles.handleCloseModal1} onClick={handleCloseModal1}>Close</button>
                     </div>
                     </div>
 
@@ -771,6 +813,13 @@ function POS() {
           </div>
         </div>
       )}
+
+
+
+      <Routes>
+        <Route path="successful" element={<Successful/>} />
+        <Route path="failed" element={<Failed/>} />
+      </Routes>
         </section>
     );
 }

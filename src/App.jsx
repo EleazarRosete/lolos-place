@@ -34,7 +34,7 @@ function App() {
         <Route path='/feedback' element={<Feedback/>}/>
         <Route path='/successpage' element={<SuccessPage/>}/>
         <Route path='/order-history' element={<OrderHistory/>}/>
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/*" element={<Admin />} />
 
       </Routes>
     </Router>

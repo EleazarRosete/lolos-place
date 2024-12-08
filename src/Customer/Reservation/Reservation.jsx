@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import axios from 'axios';
+import cartImage from '../../assets/cart.png';
 
 const Reservation = () => {
   const { customer, menuData, cartReservations, setCartReservations, formData, setFormData, isAdvanceOrder, setIsAdvanceOrder, initialFormData } = useCustomer();
@@ -21,6 +22,7 @@ const Reservation = () => {
   const [filter, setFilter] = useState('all');
   const [scrollPos, setScrollPos] = useState(window.scrollY);
   const [formValid, setFormValid] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -28,6 +30,11 @@ const Reservation = () => {
     const isValid = name.trim() && date.trim() && time.trim() && !isNaN(guests) && guests > 0 && contact.trim();
     setFormValid(isValid);
     return isValid;
+  };
+
+  const [showCart, setShowCart] = useState(false);
+  const toggleCart = () => {
+    setShowCart((prev) => !prev);
   };
   
 
@@ -323,13 +330,24 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
 
   const makePaymentGCash = async () => {
     const body = {
-        user_id: customer.id,
-        lineItems: cartReservations.map(product => ({
-            quantity: product.quantity,
-            name: product.name,
-            price: product.price
-        })),
-    };
+      user_id: customer.id,
+      lineItems: cartReservations.map(product => {
+          // Ensure that product.price is a valid number before proceeding
+          const price = parseFloat(product.price);
+          if (isNaN(price)) {
+              console.error('Invalid price:', product.price);
+              return {};  // Skip this item if the price is invalid
+          }
+          // Calculate the total price (product price + 10% of product price)
+          const totalPrice = price * 0.1 + price;
+
+          return {
+              quantity: product.quantity,
+              name: product.name,
+              price: totalPrice.toFixed(2),  // Format the price to two decimal places
+          };
+      }),
+  };
 
     try {
         const response = await axios.post('http://localhost:5000/api/create-gcash-checkout-session', body);
@@ -341,6 +359,49 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
         console.error('Error initiating payment:', error);
     }
 }
+
+useEffect(() => {
+  const fetchTotalAmount = async () => {
+    let products = [];
+    let total = 0;
+    let orderSum = 0;  // Variable to sum individual order totals
+
+    try {
+      const productResponse = await axios.get('http://localhost:5000/menu/get-product');
+      products = productResponse.data;
+    } catch (err) {
+      console.error('Error fetching products:', err.message);
+      return;
+    }
+
+    // Ensure cartOrders is defined before attempting to iterate
+    if (cartReservations && Array.isArray(cartReservations)) {
+      // Iterate through cartOrders and calculate the total
+      cartReservations.forEach(order => {
+        const product = products.find(p => p.menu_id === order.menu_id);
+        if (product) {
+          // Calculate the order total based on price and quantity
+          const orderTotal = product.price * order.quantity;
+          orderSum += parseFloat(orderTotal.toFixed(2)); // Add individual order total to orderSum
+          total += parseFloat((product.price * 0.10).toFixed(2)); // Add discount to total
+        }
+      });
+
+      // Add the sum of the orders (orderSum) to the main total
+      total += orderSum;
+
+      console.log('Order Sum:', orderSum); // Debugging the sum of individual orders
+      console.log('Calculated Total:', total); // Debugging the final total
+
+      setTotalAmount(total); // Update the state with the calculated total
+    } else {
+      console.error('cartOrders is not properly defined');
+    }
+  };
+
+  fetchTotalAmount(); // Call the async function to calculate total amount
+}, [cartReservations]); // Added cartOrders to the dependency array
+
 
   return (
     <MainLayout>
@@ -471,7 +532,9 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
           <h3>{menuItem.name}</h3>
           <p>Price: ₱{menuItem.price}</p>
           <p>{menuItem.description}</p> {/* Add the description here */}
-          
+          <>
+                      <img src={menuItem.img} alt={menuItem.name} />
+                    </>
           {/* Check for bundle items and render them */}
           {menuItem.items && menuItem.items.length > 0 ? (
             <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
@@ -480,6 +543,7 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
               ))}
             </ul>
           ) : null}
+          <p>Stocks: {menuItem.stocks}</p>
 
           <div>
             <button
@@ -497,24 +561,49 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
   </div>
 </div>
 
-              <div className="cart">
-                <h3>Your Cart</h3>
-                <div id="cart-items">
-                  {cartReservations.map((item, index) => (
-                    <div key={index} className="cart-item">
-                      <div className="item-details">{item.name}</div>
-                      <div className="item-actions">
-                        <div className="quantity-control">
-                          <button onClick={() => handleQuantityChange(index, item.quantity - 1)} disabled={item.quantity <= 1}>-</button>
-                          <span className="quantity-text">{item.quantity}</span>
-                          <button onClick={() => handleQuantityChange(index, item.quantity + 1)}>+</button>
-                        </div>
-                        <button className="cart-button" onClick={() => handleRemoveFromCart(index)}>Remove</button>
-                      </div>
+<>
+      {/* Floating Button */}
+      <button className="floating-button" onClick={toggleCart}>
+        <img src={cartImage} alt="Cart" className="button-image" />
+      </button>
+
+      {/* Cart Popup */}
+      {showCart && (
+        <div className="cart-popup">
+          <div className="cart">
+            <h3>Your Cart</h3>
+            <div id="cart-items">
+              {cartReservations.map((item, index) => (
+                <div key={index} className="cart-item">
+                  <div className="item-details">{item.name}</div>
+                  <div className="item-actions">
+                    <div className="quantity-control">
+                      <button
+                        onClick={() => handleQuantityChange(index, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <span className="quantity-text">{item.quantity}</span>
+                      <button onClick={() => handleQuantityChange(index, item.quantity + 1)}>+</button>
                     </div>
-                  ))}
+                    <button className="cart-button" onClick={() => handleRemoveFromCart(index)}>
+                      Remove
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+            <button className="submit-btn" onClick={handleReserve}>
+              Place Order
+            </button>
+            <button className="close-btn" onClick={() => setShowCart(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </>
 
               {/* Reserve with Advance Order button */}
               <button type="submit" className="reserve-button" onClick={handleReserve}>Reserve with Advance Order</button>
@@ -576,7 +665,7 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
                     </li>
                   ))}
                 </ul>
-                <h4 className="total">Total: ₱{getTotalAmount()}</h4>
+                <h4 className="total">Total: ₱{totalAmount}</h4>
                 <div className="receipt-footer">
               <button className="confirm-btn" onClick={makePaymentGCash}>
                 Confirm
@@ -610,14 +699,6 @@ oneYearLaterDate.setFullYear(today.getFullYear() + 1);
             </div>
               </>
             )}
-            {/* <div className="receipt-footer">
-              <button className="confirm-btn" onClick={handleConfirmOrder}>
-                Confirm
-              </button>
-              <button className="close-btn" onClick={closeConfirmationPopup}>
-                Close
-              </button>
-            </div> */}
           </div>
         </div>
       )}

@@ -6,9 +6,7 @@ import BestProductCard from './Cards/BestProductCard/BestProductCard.jsx';
 import DeliveriesCard from './Cards/DeliveriesCard/DeliveriesCard.jsx';
 import ReservationCard from './Cards/ReservationCard/ReservationCard.jsx';
 
-
 function Dashboard() { 
-
     return (
         <section className={styles.section}>
             <div className={styles.cardContainer}>
@@ -18,7 +16,6 @@ function Dashboard() {
                 <DeliveriesCard/>
                 <ReservationCard/>
                 <BestProductCard/>
-
             </div>
         </section>
     );

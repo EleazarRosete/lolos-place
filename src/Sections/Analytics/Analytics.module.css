@@ -27,7 +27,7 @@
 /* Unique Button Styling */
 .analyticsButton {
     padding: 12px 24px;
-    background-color: #007BFF;
+    background-color: #3e2723;
     color: white;
     font-size: 1.1rem;
     border: none;
@@ -36,10 +36,6 @@
     transition: background-color 0.3s, transform 0.3s;
 }
 
-.analyticsButton:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
 
 /* New Graph Wrapper Styling */
 .graphWrapper {

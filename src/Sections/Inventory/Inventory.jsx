@@ -208,12 +208,13 @@ function Inventory() {
                         <div className={styles.removeContent}>
                             <p className={styles.text1}>Are you sure you want to remove this item?</p>
                             <div className={styles.buttonGroup}>
+                            <button className={styles.confirmButton} onClick={handleCloseConfirmModal}>
+                                    Cancel
+                                </button>
                                 <button className={styles.confirmButton} onClick={handleConfirmRemoval}>
                                     Yes, Remove Item
                                 </button>
-                                <button className={styles.confirmButton} onClick={handleCloseConfirmModal}>
-                                    Cancel
-                                </button>
+   
                             </div>
                         </div>
                     </div>

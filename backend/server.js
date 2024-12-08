@@ -92,6 +92,9 @@ app.post('/api/feedback', async (req, res) => {
 
   
 
+
+// Test route
+
 app.post('/api/login', async (req, res) => {
   const { identifier, password } = req.body;
 
@@ -429,7 +432,6 @@ app.post('/api/reservations', async (req, res) => {
   }
 });
 
-
 const generateRandomId = (length) => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -452,7 +454,11 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
       };
   });
 
-  const randomId = generateRandomId(28)
+  const randomId = generateRandomId(28);
+
+  // Define URLs based on user_id
+  const successUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/successful' : `http://localhost:5173/successpage?session_id=${randomId}`;
+  const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : 'http://localhost:5173/';
 
   try {
       const response = await axios.post(
@@ -464,8 +470,8 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
                       show_line_items: true,
                       line_items: formattedLineItems, 
                       payment_method_types: ['gcash'],
-                      success_url: `http://localhost:5173/successpage?session_id=${randomId}`,
-                      cancel_url: 'http://localhost:5173/',
+                      success_url: successUrl,
+                      cancel_url: cancelUrl,
                   },
               },
           },
@@ -486,29 +492,29 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
 
       const client = await pool.connect();
 
-        try {
-            await client.query('BEGIN');
+      try {
+          await client.query('BEGIN');
 
-            // UPSERT query
-            const query = `
-                INSERT INTO payment (user_id, session_id, payment_status)
-                VALUES ($1, $2, $3)
-                ON CONFLICT (user_id) 
-                DO UPDATE SET 
-                    session_id = EXCLUDED.session_id,
-                    payment_status = EXCLUDED.payment_status;
-            `;
-            const values = [user_id, randomId, 'pending'];
+          // UPSERT query
+          const query = `
+              INSERT INTO payment (user_id, session_id, payment_status)
+              VALUES ($1, $2, $3)
+              ON CONFLICT (user_id) 
+              DO UPDATE SET 
+                  session_id = EXCLUDED.session_id,
+                  payment_status = EXCLUDED.payment_status;
+          `;
+          const values = [user_id, randomId, 'pending'];
 
-            await client.query(query, values);
-            await client.query('COMMIT'); // Commit the transaction
-        } catch (error) {
-            await client.query('ROLLBACK'); // Rollback in case of error
-            console.error('Error inserting/updating payment:', error.message);
-            return res.status(500).json({ error: 'Failed to insert/update payment', details: error.message });
-        } finally {
-            client.release(); // Release the connection back to the pool
-        }
+          await client.query(query, values);
+          await client.query('COMMIT'); // Commit the transaction
+      } catch (error) {
+          await client.query('ROLLBACK'); // Rollback in case of error
+          console.error('Error inserting/updating payment:', error.message);
+          return res.status(500).json({ error: 'Failed to insert/update payment', details: error.message });
+      } finally {
+          client.release(); // Release the connection back to the pool
+      }
 
       res.status(200).json({ url: checkoutUrl });
   } catch (error) {
@@ -516,6 +522,7 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
       res.status(500).json({ error: 'Failed to create checkout session', details: error.response ? error.response.data : error.message });
   }
 });
+
 
 
 app.get('/api/check-payment-status/:user_id', async (req, res) => {
@@ -537,6 +544,33 @@ app.get('/api/check-payment-status/:user_id', async (req, res) => {
   } catch (error) {
       console.error('Error checking payment status:', error.message);
       res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/top-best-sellers', async (req, res) => {
+  try {
+    // Query to fetch the top 3 best-selling products
+    const result = await pool.query(
+      `
+      SELECT 
+        product_name,
+        SUM(quantity_sold) AS total_sold,
+        SUM(amount) AS total_revenue
+      FROM sales_data
+      GROUP BY product_name
+      ORDER BY total_sold DESC
+      LIMIT 3;
+      `
+    );
+
+    // Send the result as JSON
+    res.status(200).json({
+      message: 'Top 3 best-selling products retrieved successfully',
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Error fetching best-sellers:', error.message);
+    res.status(500).json({ message: 'Server error while fetching best sellers' });
   }
 });
 

@@ -83,7 +83,7 @@ textarea {
 
 .buttonSubmit {
     padding: 10px 20px;
-    background-color: #5cb85c;
+    background-color: #3e2723;
     color: white;
     border: none;
     border-radius: 4px;
@@ -92,7 +92,7 @@ textarea {
 
 .buttonCancel {
     padding: 10px 20px;
-    background-color: #d9534f;
+    background-color: #3e2723;
     color: white;
     border: none;
     border-radius: 4px;

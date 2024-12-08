@@ -125,18 +125,19 @@
                             <p><strong>Order ID:</strong> {selectedDelivery.order_id}</p>
                             <p><strong>Location:</strong> {selectedDelivery.delivery_location}</p>
                             <div className={styles.modalActions}>
+                            <button
+                                    className={styles.cancelButton}
+                                    onClick={closeModal}
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     className={styles.confirmButton}
                                     onClick={() => updateDeliveryStatus(selectedDelivery.delivery_id)}
                                 >
                                     Yes, Delivered
                                 </button>
-                                <button
-                                    className={styles.cancelButton}
-                                    onClick={closeModal}
-                                >
-                                    Cancel
-                                </button>
+
                             </div>
                         </div>
                     </div>

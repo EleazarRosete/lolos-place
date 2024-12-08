@@ -362,6 +362,62 @@ const orderServed = (req, res) => {
 };
 
 
+const addTempData = async (req, res) => {
+    const { order, salesdata, paidorder } = req.body;
+
+    try {
+        const addResult = await pool.query(
+            `INSERT INTO temp_data ("order", salesdata, paidorder) 
+            VALUES ($1, $2, $3) 
+            RETURNING *`, 
+            [order, salesdata, paidorder]
+        );
+
+        res.status(201).json({
+            message: 'Temporary data added successfully',
+            tempDataId: addResult.rows[0].purchases_id
+        });
+    } catch (error) {
+        console.error('Error adding temporary data:', error);
+        res.status(500).json({ error: 'Error adding temporary data' });
+    }
+};
+
+
+const getTempData = (req, res) => {
+    pool.query(queries.getTempData, (error, results) => {
+        if (error) {
+            console.error('Error fetching Product:', error);
+            return res.status(500).json({ error: 'Error fetching Product' });
+        }
+        res.status(200).json(results.rows);
+    });
+};
+
+const deleteTempData = async (req, res) => {
+    const { purchases_id } = req.params;
+
+    try {
+        // Attempt to delete the reservation
+        const result = await pool.query('DELETE FROM temp_data WHERE purchases_id = $1 RETURNING *', [purchases_id]);
+
+        // Check if any rows were deleted
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Temporary Data not found' });
+        }
+
+        // Successful deletion
+        res.status(200).json({ success: 'Success' });
+    } catch (err) {
+        // Log the full error for debugging
+        console.error('Error during DELETE operation:', err);
+
+        // Return a 500 error with the error message and details
+        res.status(500).json({ error: 'Error deleting temporary data', details: err.message });
+    }
+};
+
+
 
 module.exports = {
     addProduct,
@@ -382,4 +438,7 @@ module.exports = {
     cancelReservation,
     getUsers,
     orderServed,
+    addTempData,
+    getTempData,
+    deleteTempData,
 };

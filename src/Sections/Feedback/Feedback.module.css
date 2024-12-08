@@ -36,37 +36,38 @@
 }
 
 .controls .sort{
-    background-color: #FEF7E1; /* Set the button background color to #62504E */
+    background-color: #3e2723; /* Set the button background color to #62504E */
     border: 0;
+    color: #FEF7E1;
     padding: 0.2rem 0.5rem;
     cursor: pointer;
     border-radius: 0.3rem;
-    transition: 0.5s ease-in-out;
-    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
-    border-top: 1px solid #3e2723;
+    transition: 0.3s ease-in-out;
 }
 
 .controls .sort:hover{
-    background-color: #F9E6C9; /* Lighter shade of #62504E for hover effect */
-}
-
-.controls .filter{
-    background-color: #FEF7E1; /* Set the filter button background color to #62504E */
-    border: 0;
-    padding: 0.2rem 0.5rem;
-    cursor: pointer;
-    border-radius: 0.3rem;
-    transition: 0.5s ease-in-out;
     box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
     border-top: 1px solid #3e2723;
 }
 
+.controls .filter{
+    background-color: #3e2723; /* Set the filter button background color to #62504E */
+    border: 0;
+    color: #FEF7E1;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    border-radius: 0.3rem;
+    transition: 0.3s ease-in-out;
+
+}
+
 .controls .filter:hover{
-    background-color: #F9E6C9; /* Lighter shade of #62504E for hover effect */
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 

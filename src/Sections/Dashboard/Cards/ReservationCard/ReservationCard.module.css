@@ -162,7 +162,7 @@
 }
 
 .cancelReservation , .confirmReservationCancel{
-    background: #28a745;
+    background: #3e2723;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -171,13 +171,10 @@
     transition: 0.3s ease-in-out ;
 }
 
-.cancelReservation:hover, .confirmReservationCancel:hover{
-    background: #5ed67a;
-    color: #0e0e0e;
-}
+
 
 .closeModalStyles , .cancelReservationProcess{
-    background: #dc3545;
+    background: #3e2723;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -187,10 +184,7 @@
 
 }
 
-.closeModalStyles:hover , .cancelReservationProcess:hover{
-    background: #e97383;
-    color: #0e0e0e;
-}
+
 
 .confirmationModal {
     position: fixed;

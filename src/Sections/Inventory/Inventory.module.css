@@ -58,8 +58,8 @@
 }
 
 .addButton {
-    background-color: #FEF7E1; /* Example button color */
-    color: black; /* Button text color */
+    background-color: #3e2723; /* Example button color */
+    color: #F4F4F9; /* Button text color */
     border: none; /* Remove border */
     border-radius: 0.2rem; /* Round corners */
     cursor: pointer; /* Change cursor on hover */
@@ -121,7 +121,7 @@
 }
 
 .removeContent {
-    background: #0e0e0e;
+    background: #FEF7E1;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -140,6 +140,9 @@
 }
 
 .confirmButton {
+    background-color: #3e2723;
+    color: #FEF7E1;
+    font-weight: 500;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
@@ -147,11 +150,6 @@
     transition: background-color 0.3s;
 }
 
-/* You can add hover effects for the buttons */
-.confirmButton:hover {
-    background-color: #f44336; /* Change this to your desired hover color */
-    color: white; /* Change text color on hover */
-}
 
 .actions {
     margin: 1rem 0;
@@ -183,7 +181,8 @@
 .buttons {
     cursor: pointer;
     height: 100%;
-    background-color: #FEF7E1;
+    background-color: #3e2723;
+    color: #F4F4F9;
     border: 0;
     font-weight: 400;
     padding: 0.5rem 1rem;
@@ -215,7 +214,7 @@
 }
 
 .category{
-    background-color: #FEF7E1;
+    background-color: #3e2723;
     width: 25%;
     height: 100%;
     padding: 0.2rem 0.1rem;
@@ -225,4 +224,5 @@
     -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
     border-top: 1px solid #3e2723;
+    cursor: pointer;
 }

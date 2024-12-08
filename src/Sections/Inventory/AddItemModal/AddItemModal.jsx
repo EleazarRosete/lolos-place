@@ -230,7 +230,7 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
                         />
                         <div className={styles.buttonGroup}>
                             <button type="submit" className={styles.buttonSubmit}>
-                                {item ? 'Update Item' : 'Add Item'}
+                                {item ? 'Update Product' : 'Add Product'}
                             </button>
                             <button className={styles.buttonCancel} onClick={onClose}>
                                 Close

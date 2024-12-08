@@ -46,6 +46,10 @@ SET status = 'served'
 WHERE order_id = $1;
 `;
 
+const getTempData = `SELECT * FROM temp_data;`;
+
+
+
 module.exports = {
     addProduct,
     getProduct,
@@ -67,4 +71,5 @@ module.exports = {
     cancelReservation,
     getUsers,
     orderServed,
+    getTempData,
 };

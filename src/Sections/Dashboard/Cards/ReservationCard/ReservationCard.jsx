@@ -6,7 +6,7 @@ function ReservationCard() {
         today: [],
         upcoming: []
     });
-    const [order, setOrder] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [reservationToCancel, setReservationToCancel] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
@@ -55,7 +55,7 @@ function ReservationCard() {
                 headers: { "Content-Type": "application/json" },
             });
             const jsonData = await response.json();
-            setOrder(jsonData);
+            setOrders(jsonData);
         } catch (err) {
             console.error('Error fetching order history:', err.message);
         }
@@ -91,7 +91,7 @@ function ReservationCard() {
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
     const handleCancelClick = (reservation_id) => {
@@ -103,8 +103,8 @@ function ReservationCard() {
     const openModal = (reservationDetails) => {
         setModalData(reservationDetails);
         setShowModal(true);
-        const filteredOrders = order.filter(o => o.reservation_id === reservationDetails.reservation_id);
-        setOrder(filteredOrders);
+        const filteredOrders = orders.filter(o => o.reservation_id === reservationDetails.reservation_id);
+        setModalData(prevData => ({ ...prevData, order: filteredOrders }));
     };
 
     const closeModal = () => {
@@ -123,6 +123,11 @@ function ReservationCard() {
                 reservations.today.map(({ reservation_id, first_name, last_name, guest_number, reservation_date, reservation_time }) => (
                     <div key={reservation_id} className={styles.reservationItem}>
                         <p><strong>Guest number:</strong> {guest_number}</p>
+                        {orders
+                            .filter(order => order.reservation_id === reservation_id)
+                            .map(order => (
+                                <p key={order.order_id}><strong>Order ID:</strong> #{order.order_id}</p>
+                            ))}
                         <p><strong>Name:</strong> {first_name} {last_name}</p>
                         <p><strong>Reservation Date:</strong> {formatDate(reservation_date)}</p>
                         <p><strong>Reservation Time:</strong> {formatTime(reservation_time)}</p>
@@ -143,6 +148,11 @@ function ReservationCard() {
                 reservations.upcoming.map(({ reservation_id, first_name, last_name, guest_number, reservation_date, reservation_time }) => (
                     <div key={reservation_id} className={styles.reservationItem}>
                         <p><strong>Guest number:</strong> {reservation_id}</p>
+                        {orders
+                            .filter(order => order.reservation_id === reservation_id)
+                            .map(order => (
+                                <p key={order.order_id}><strong>Order ID:</strong> #{order.order_id}</p>
+                            ))}
                         <p><strong>Name:</strong> {first_name} {last_name}</p>
                         <p><strong>Reservation Date:</strong> {formatDate(reservation_date)}</p>
                         <p><strong>Reservation Time:</strong> {formatTime(reservation_time)}</p>
@@ -177,23 +187,26 @@ function ReservationCard() {
                         <p><strong>Guest Number:</strong> {modalData.reservation_id}</p>
                         <p><strong>Customer Name:</strong> {modalData.customer_name}</p>
                         <p><strong>Reservation Date:</strong> {formatDate(modalData.reservation_date)}</p>
-                        <p><strong>Order Items:</strong></p>
-                        {order.length > 0 ? (
-                            <ul className={styles.itemList}>
-                                {order[0]?.items?.length > 0 ? (
-                                    order[0].items.map(item => (
-                                        <li key={item.menu_name} className={styles.item}>
-                                            {item.menu_name} - {item.order_quantity}
-                                        </li>
-                                    ))
-                                ) : null}
-                            </ul>
+                        {modalData.order && modalData.order.length > 0 ? (
+                            <div>
+                                <h4>Order Details</h4>
+                                {modalData.order.map(order => (
+                                    <div key={order.order_id}>
+                                        <p><strong>Order ID:</strong> #{order.order_id}</p>
+                                        <ul>
+                                            {order.items.map(item => (
+                                                <li key={item.menu_name}>{item.menu_name} - {item.order_quantity}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
                             <p>No orders yet!</p>
                         )}
                         <div className={styles.navButtonsReservation}>
                             <button onClick={closeModal} className={styles.closeModalStyles}>Close</button>
-                            <button onClick={() => handleCancelClick(modalData.reservation_id)} className={styles.cancelReservation}>Cancel Reservation</button>
+                            <button onClick={() => handleCancelClick(modalData.reservation_id)} className={styles.confirmReservationCancel}>Cancel Reservation</button>
                         </div>
                     </div>
                 </div>

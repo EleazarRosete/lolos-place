@@ -12,7 +12,20 @@
     justify-content: center;
 }
 
-.modal {
+.modalOrders{
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(14, 14, 14, 0.5);
+    z-index: 100;
+}
+
+.modalOrder {
     background-color: #FEF7E1;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -20,22 +33,33 @@
     max-width: 400px;
     padding: 20px;
     text-align: center;
+
+
 }
 
-.modalContent p {
+.navButtonOrders{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 6vh;
+}
+
+.modalContents p {
     margin-bottom: 1rem;
     font-size: 1rem;
     color: #212121;
 }
 
-.modalContent button {
+.modalContents .orderButtonsHistory {
     background-color: #3e2723;
     color: white;
     border: none;
     border-radius: 0.25rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    margin: 0 4rem;    
+    margin: 0 4rem;   
+    width: 100%;
+    height: 100%; 
 }
 
 .section {
@@ -88,7 +112,7 @@
 .filterButton {
     cursor: pointer;
     height: 100%;
-    background-color: #FEF7E1;
+    background-color: #3e2723;
     border: 0;
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -97,13 +121,7 @@
     border-radius: 0.3rem;
     border-top: 1px solid #3e2723;
     transition: 0.4s ease-in-out;
-}
-
-.filterButton:hover {
-    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
-    border-top: 1px solid #3e2723;
+    color: #F4F4F9;
 }
 
 /* Search bar */
@@ -115,9 +133,15 @@
     margin-bottom: 1rem;
 }
 
-.pendingOrdersContainer .noOrdersTxt{
+.noOrdersTxt{
+    position: relative;
     color: #3e2723;
-    font-size: 5rem;
+    font-size: 3rem;
+    opacity: 0.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 .searchInput {
@@ -141,7 +165,8 @@
 .buttonOrderHistory {
     cursor: pointer;
     height: 100%;
-    background-color: #FEF7E1;
+    background-color: #3e2723;
+    color: #F4F4F9;
     border: 0;
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -152,12 +177,6 @@
     border-top: 1px solid #3e2723;
 }
 
-.buttonOrderHistory:hover{
-    border-top: 1px solid #3e2723;
-    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
-    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);  
-}
 
 /* Orders Section */
 .orderPurchasesContainer {
@@ -169,6 +188,10 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     scrollbar-width: none; /* For Firefox */
+    box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
+    -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
+    border-top: 1px solid #3e2723;
 }
 
 .orderPurchasesContainer::-webkit-scrollbar {
@@ -195,9 +218,6 @@
     margin: 0;
 }
 
-.orderList{
-
-}
 
 .orderList,
 .orderList1 {
@@ -211,7 +231,7 @@
 .orderItem1 {
     padding: 1rem;
     margin-bottom: 1rem;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 5px dashed #3e2723;
     box-sizing: border-box;
 }
 

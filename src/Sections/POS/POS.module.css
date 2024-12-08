@@ -136,8 +136,13 @@
     cursor: pointer;
     border: none;
     gap: 0.4rem;
-    background-color: #FEF7E1;
+    background-color: #3e2723;
+    color: #F4F4F9;
     border: 1px solid #3e2723;
+    transition: 0.3s ease-in-out;
+}
+
+.filterContainer:hover{
     box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
@@ -148,13 +153,17 @@ select {
     border: 0;
     width: 70%;
     cursor: pointer;
+    color: #F4F4F9;
 }
 
 option {
-    background-color: #FEF7E1;
+    background-color: #3e2723;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: 500;
+    color: #F4F4F9;
+    cursor: pointer;
 }
+
 
 .menuContainer {
     grid-area: menu;
@@ -789,3 +798,16 @@ input[type="radio"] {
         width: 90%; /* Adjust search bar for mobile */
     }
 }
+
+
+.handleCloseModal1 {
+    background-color: #3e2723;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+

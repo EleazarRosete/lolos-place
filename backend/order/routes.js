@@ -8,8 +8,9 @@ router.post('/add-order', controller.addOrder);
 router.get('/get-order', controller.getOrder);
 router.put('/order-served/:order_id', controller.orderServed);
 
-
-
+router.post('/add-temp-data', controller.addTempData);
+router.get('/get-temp-data', controller.getTempData);
+router.delete('/delete-temp-data/:purchases_id', controller.deleteTempData);
 
 router.post('/add-reservation', controller.addReservation);
 router.get('/get-reservation', controller.getReservation);

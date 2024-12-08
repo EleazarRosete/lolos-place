@@ -70,21 +70,21 @@
 }
 
 .actionGroup .editButton {
-    background-color: #4cae4c; /* Green for edit */
-    color: #3e2723;
+    background-color: #3e2723; /* Green for edit */
+    color: #F4F4F9;
 }
 
-.actionGroup .editButton:hover {
+.actionGroup {
     background-color: #66c266; /* Lighter green on hover */
     transform: scale(1.05); /* Slight zoom effect */
 }
 
 .actionGroup .removeButton {
-    background-color: #c9302c; /* Red for remove */
-    color: #3e2723;
+    background-color: #3e2723; /* Red for remove */
+    color: #F4F4F9;
 }
 
-.actionGroup .removeButton:hover {
+.actionGroup {
     background-color: #e04a48; /* Lighter red on hover */
     transform: scale(1.05); /* Slight zoom effect */
 }

@@ -131,7 +131,7 @@ section .deliveryButton:hover{
 }
 
 .modalActions .confirmButton {
-    background: #28a745;
+    background: #3e2723;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -139,15 +139,12 @@ section .deliveryButton:hover{
     cursor: pointer;
     transition: 0.3s ease-in-out ;
 }
-.modalActions .confirmButton:hover {
-    background: #5ed67a;
-    color: #0e0e0e;
-}
+
 
 
 
 .modalActions .cancelButton {
-    background: #dc3545;
+    background: #3e2723;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -157,10 +154,6 @@ section .deliveryButton:hover{
 
 }
 
-.modalActions .cancelButton:hover {
-    background: #e97383;
-    color: #0e0e0e;
-}
 /* Add this to your CSS file */
 .section {
     width: 90%;
