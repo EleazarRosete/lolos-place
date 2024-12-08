@@ -9,3 +9,4 @@ Currently, two official plugins are available:
 "# lolos-placee" 
 "# lolos-place-decent-ver" 
 "# lolos-place" 
+"# lolos-place" 
