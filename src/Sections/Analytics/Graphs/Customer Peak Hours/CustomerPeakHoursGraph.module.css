@@ -1,13 +1,13 @@
 /* General Section */
 .section {
-  width: 79%;
-  height: 70vh;
-  position: fixed;
+  width: 100%;
+  height: 80vh; /* Adjusted to make it more responsive */
+  position: relative;
   background-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
   flex-direction: column;
   overflow: hidden;
 }
@@ -16,12 +16,13 @@
 .graphFeedbackContainer {
   display: flex;
   justify-content: center; /* Align items in a row without wrapping */
-  align-items: center; /* Align items to the top of the container */
-  gap: 1rem; /* Small space between the two sections */
+  align-items: flex-start; /* Align items to the top of the container */
+  gap: 2rem; /* Slightly larger space between the two sections */
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   background-color: transparent;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
 }
 
 /* Graph Container */
@@ -29,11 +30,11 @@
   background-color: transparent;
   position: relative;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
   flex: 1; /* Ensures the graph container takes up available space */
   width: 100%;
-  max-width: 100%; /* Ensures the graph doesn't take up too much space */
+  max-width: 100%;
   max-height: 100%;
 }
 
@@ -46,8 +47,9 @@
   flex: none; /* Prevents the feedback section from growing */
   text-align: left;
   color: #272626;
-  overflow-y: scroll; /* Allows vertical scrolling */
+  overflow-y: auto; /* Allows vertical scrolling */
   max-height: 400px; /* Set a max height to enable scrolling */
+  margin-top: 2rem;
 }
 
 /* Hide the scrollbar */
@@ -55,20 +57,21 @@
   display: none; /* Hides the scrollbar */
 }
 
-.graphContainer .customerReviewsGraph{
+.graphContainer .customerReviewsGraph {
   width: 100%;
   height: auto;
 }
 
 /* Graph Styles */
-.customerReviewsGraph, .feedbackGraph {
+.customerReviewsGraph,
+.feedbackGraph {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Graph Image */
 .customerReviewsGraph {
-  width: 45%;
+  width: 100%; /* Ensures full width on smaller screens */
   max-height: 70%; /* Limits image height */
   object-fit: contain; /* Ensures the image scales proportionally without cropping */
   background-color: transparent;
@@ -123,7 +126,8 @@ table {
   margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
   padding: 0.5rem;
   text-align: left;
 }
@@ -137,13 +141,60 @@ td {
 }
 
 /* Media Queries for Responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .graphFeedbackContainer {
-    flex-direction: column; /* Stack items vertically on small screens */
+    flex-direction: column; /* Stack items vertically on medium screens */
+    gap: 1.5rem; /* Adjust the gap */
   }
 
-  .graphContainer, .feedbackGraph {
-    width: 100%; /* Ensure both sections take up full width */
-    max-width: 100%; /* Avoid max-width limitation on small screens */
+  .feedbackGraph {
+    max-width: 80%; /* Makes the feedback section larger on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    height: auto; /* Makes the section's height flexible on smaller screens */
+  }
+
+  .graphFeedbackContainer {
+    flex-direction: column; /* Stack items vertically on small screens */
+    gap: 1rem; /* Reduce the gap between the sections */
+  }
+
+  .graphContainer {
+    width: 100%; /* Ensure graph takes full width */
+  }
+
+  .feedbackGraph {
+    width: 100%; /* Feedback section takes full width */
+    max-height: 250px; /* Adjust max height for small screens */
+    margin-top: 1rem; /* Adds margin above feedback */
+  }
+
+  .customerReviewsGraph {
+    width: 100%; /* Graph takes full width */
+    max-height: 60%; /* Adjust max height */
+  }
+}
+
+@media (max-width: 480px) {
+  .section {
+    height: auto; /* Ensure section height is flexible */
+    padding: 0.5rem; /* Less padding on smaller screens */
+  }
+
+  .feedbackGraph {
+    max-width: 100%; /* Feedback section takes full width */
+    max-height: 200px; /* Further reduce max height on small screens */
+  }
+
+  .graphContainer {
+    padding: 0; /* Remove extra padding for smaller devices */
+  }
+
+  .customerReviewsGraph {
+    width: 100%;
+    max-height: 50%; /* Adjust height for smaller screens */
   }
 }

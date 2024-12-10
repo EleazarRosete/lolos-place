@@ -3,6 +3,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from flask_cors import CORS
 import plotly.graph_objects as go
 import plotly.io as pio
+import matplotlib.pyplot as plt
 import io
 import psycopg2
 import numpy as np
@@ -10,6 +11,7 @@ import kaleido  # Ensure kaleido is installed
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from datetime import datetime  # Import datetime module
+import base64
 
 app = Flask(__name__)
 CORS(app)
@@ -35,38 +37,99 @@ def highest_selling_products_data():
         # Connect to the database
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
+                # Execute query to fetch the highest-selling products
                 cursor.execute("""
                     WITH product_sales AS (
-    SELECT 
-        product_name, 
-        SUM(quantity_sold) AS total_quantity_sold
-    FROM sales_data
-    GROUP BY product_name
-),
-ranked_sales AS (
-    SELECT 
-        product_name,
-        total_quantity_sold,
-        RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
-    FROM product_sales
-)
-SELECT 
-    product_name,
-    total_quantity_sold
-FROM ranked_sales
-ORDER BY total_quantity_sold DESC;
-
+                        SELECT 
+                            product_name, 
+                            SUM(quantity_sold) AS total_quantity_sold
+                        FROM sales_data
+                        GROUP BY product_name
+                    ),
+                    ranked_sales AS (
+                        SELECT 
+                            product_name,
+                            total_quantity_sold,
+                            RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
+                        FROM product_sales
+                    )
+                    SELECT 
+                        product_name,
+                        total_quantity_sold
+                    FROM ranked_sales
+                    ORDER BY total_quantity_sold DESC;
                 """)
                 data = cursor.fetchall()
 
-        # If no data is found
+        # Handle case where no sales data is found
         if not data:
-            return jsonify({"error": "No sales data available for the highest-selling products"}), 404
+            return jsonify({
+                "message": "No sales data available for the highest-selling products",
+                "data": []
+            }), 404
 
-        # Prepare data for response
-        result = [{"product_name": row[0], "total_quantity_sold": row[1]} for row in data]
+        # Prepare response
+        result = [
+            {"product_name": row[0], "total_quantity_sold": row[1]} 
+            for row in data
+        ]
+        return jsonify({"message": "Success", "data": result}), 200
 
-        # Return the data as JSON
+    except psycopg2.DatabaseError as e:
+        print("Database error:", e)
+        return jsonify({"error": "A database error occurred. Please try again later."}), 500
+    except Exception as e:
+        print("Unexpected error:", e)
+        return jsonify({"error": "An unexpected error occurred: " + str(e)}), 500
+    
+
+
+
+
+
+    
+@app.route('/highest-selling-products', methods=['POST'])
+def product_demand_per_month():
+    try:
+        year = request.args.get('year')  # Capture year parameter from query string
+        month = request.args.get('month')  # Capture month parameter from query string
+        if not year or not month:
+            return jsonify({"error": "Year and month are required"}), 400  # Handle missing year or month
+        
+        # Connect to the database
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                 WITH monthly_sales AS (
+                    SELECT 
+                        product_name,
+                        DATE_TRUNC('month', date::DATE) AS sale_month,
+                        SUM(quantity_sold) AS total_quantity_sold
+                    FROM sales_data
+                    WHERE EXTRACT(YEAR FROM date::DATE) = %s  -- Filter by year
+                    AND EXTRACT(MONTH FROM date::DATE) = %s  -- Filter by month
+                    GROUP BY product_name, DATE_TRUNC('month', date::DATE)
+                    ORDER BY sale_month, total_quantity_sold DESC
+                 )
+                 SELECT 
+                    sale_month,
+                    product_name,
+                    total_quantity_sold
+                 FROM monthly_sales;
+                """, (year, month))
+                data = cursor.fetchall()
+
+        if not data:
+            return jsonify({"error": "No sales data available for the given month and year"}), 404
+
+        # Prepare data for visualization
+        result = {}
+        for row in data:
+            month = row[0].strftime('%Y-%m')  # Format date as Year-Month
+            if month not in result:
+                result[month] = []
+            result[month].append({"product_name": row[1], "quantity_sold": row[2]})
+
         return jsonify(result)
 
     except psycopg2.Error as e:
@@ -74,69 +137,8 @@ ORDER BY total_quantity_sold DESC;
         return jsonify({"error": "Database error: " + str(e)}), 500
     except Exception as e:
         print("General error:", e)
-        return jsonify({"error": "Error in fetching highest selling products: " + str(e)}), 500
+        return jsonify({"error": "Error in fetching product demand per month: " + str(e)}), 500
 
-
-@app.route('/highest-selling-products', methods=['POST'])
-def highest_selling_products():
-    try:
-        # Connect to the database
-        with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                   WITH product_sales AS (
-    SELECT 
-        product_name, 
-        SUM(quantity_sold) AS total_quantity_sold
-    FROM sales_data
-    GROUP BY product_name
-),
-ranked_sales AS (
-    SELECT 
-        product_name,
-        total_quantity_sold,
-        RANK() OVER (ORDER BY total_quantity_sold DESC) AS rank_desc
-    FROM product_sales
-)
-SELECT 
-    product_name,
-    total_quantity_sold
-FROM ranked_sales
-ORDER BY total_quantity_sold DESC;
-
-                """)
-                data = cursor.fetchall()
-
-        # If no data is found
-        if not data:
-            return jsonify({"error": "No sales data available for the highest-selling products"}), 404
-
-        # Prepare data for the chart
-        labels = [row[0] for row in data]
-        sales_data = [row[1] for row in data]
-
-        # Create a bar chart using Plotly
-        fig = go.Figure(data=[go.Bar(x=labels, y=sales_data, marker_color='green')])
-        fig.update_layout(
-            title='Top 5 Highest Selling Products',
-            xaxis_title='Product Name',
-            yaxis_title='Total Quantity Sold'
-        )
-
-        # Save the plot to a BytesIO object in SVG format and return it as a response
-        svg = io.BytesIO()
-        fig.write_image(svg, format='svg')
-        svg.seek(0)
-
-        # Return the SVG as a response
-        return send_file(svg, mimetype='image/svg+xml')
-
-    except psycopg2.Error as e:
-        print("Database error:", e)
-        return jsonify({"error": "Database error: " + str(e)}), 500
-    except Exception as e:
-        print("General error:", e)
-        return jsonify({"error": "Error in fetching highest selling products: " + str(e)}), 500
 
 
 @app.route('/lowest-selling-products-data', methods=['POST'])
@@ -317,6 +319,8 @@ def sales_forecast_data():
         return jsonify({"error": "Error in forecasting sales: " + str(e)}), 500
 
 
+
+
 @app.route('/sales-forecast', methods=['POST'])
 def sales_forecast():
     try:
@@ -329,6 +333,7 @@ def sales_forecast():
                         EXTRACT(MONTH FROM CAST(date AS DATE)) AS month,
                         SUM(gross_sales) AS total_gross_sales
                     FROM sales_data
+                    WHERE EXTRACT(YEAR FROM CAST(date AS DATE)) >= 2019
                     GROUP BY year, month
                     ORDER BY year, month;
                 """)
@@ -366,64 +371,39 @@ def sales_forecast():
         model = LinearRegression()
         model.fit(X, y)
 
-        # Forecast the next 12 months
-        forecast_months = 12
-        future_dates_ordinal = np.array([df['date'].max().toordinal() + i * 30 for i in range(1, forecast_months + 1)]).reshape(-1, 1)
-        forecast_sales = model.predict(future_dates_ordinal)
+        # Calculate predicted sales for the current month
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        current_month_date = datetime(current_year, current_month, 1)
+        current_month_ordinal = np.array([current_month_date.toordinal()]).reshape(-1, 1)
+        predicted_sales_this_month = model.predict(current_month_ordinal)
 
-        # Convert forecasted ordinal dates back to datetime
-        forecast_dates = [datetime.fromordinal(day) for day in future_dates_ordinal.flatten()]
-
-        # Prepare the forecast result
-        forecast_result = {
-            'forecast_dates': [date.strftime('%Y-%m-%d') for date in forecast_dates],
-            'forecast_sales': forecast_sales.tolist()
+        # Prepare the result for predicted sales for the current month
+        predicted_sales_current_month = {
+            'year': current_year,
+            'month': current_month,
+            'predicted_sales': predicted_sales_this_month.tolist()[0]
         }
 
-        # Create the plotly graph
-        fig = go.Figure()
+        # Prepare historical sales data grouped by year and month
+        sales_per_month = []
+        for _, row in df.iterrows():
+            sales_per_month.append({
+                'year': int(row['year']),
+                'month': int(row['month']),
+                'total_gross_sales': row['total_gross_sales']
+            })
 
-        # Plot historical sales data
-        fig.add_trace(go.Scatter(
-            x=df['date'],
-            y=df['total_gross_sales'],
-            mode='lines+markers',
-            name='Historical Sales'
-        ))
+        # Prepare the response data
+        response_data = {
+            'sales_per_month': sales_per_month,
+            'predicted_sales_current_month': predicted_sales_current_month
+        }
 
-        # Plot forecasted sales data
-        fig.add_trace(go.Scatter(
-            x=forecast_dates,
-            y=forecast_sales,
-            mode='lines+markers',
-            name='Forecasted Sales',
-            line=dict(dash='dash')
-        ))
-
-        # Update layout
-        fig.update_layout(
-            title="Sales Forecast",
-            xaxis_title="Date",
-            yaxis_title="Total Gross Sales",
-            template="plotly_dark",
-            showlegend=True
-        )
-
-        # Convert figure to SVG format
-        svg_bytes = pio.to_image(fig, format='svg')
-
-        # Return the SVG as a response
-        return send_file(
-            io.BytesIO(svg_bytes),
-            mimetype='image/svg+xml',
-            as_attachment=True,
-            download_name="sales_forecast.svg"
-        )
+        return jsonify(response_data)
 
     except Exception as e:
-        print("Error in forecasting sales:", e)
         return jsonify({"error": "Error in forecasting sales: " + str(e)}), 500
-
 
 
 
@@ -636,32 +616,54 @@ def peak_hours_data():
         return jsonify({"error": "Error retrieving data"}), 500
 
 
+# Negative words that could appear in text
+negative_words = ['bad', 'sad', 'angry', 'hate', 'worst', 'terrible', 'awful', 'dislike', 'sinful']
+
+# Specific cases where negative words indicate positive sentiment
+positive_with_negative_words = [
+    "sinful",  # This could be used in a positive way when describing indulgence, like in desserts
+    "bad"  # Sometimes 'bad' is used in a playful or indulgent context (e.g., "This is bad, but so good")
+]
 
 @app.route('/api/analyze-sentiment', methods=['POST'])
 def analyze_sentiment():
     data = request.get_json()  # Getting the JSON data from the request
     text = data.get('text')  # Extracting the text field from the JSON data
-    print("EELELELELELELE")
+    
     # Analyzing sentiment using the VADER sentiment analyzer
     sentiment_score = analyzer.polarity_scores(text)
     compound_score = sentiment_score['compound']
     
-    # Classifying sentiment based on the compound score
+    # Check for the presence of negative words, but allowing for positive sentiment context
+    contains_negative_word = any(neg_word in text.lower() for neg_word in negative_words)
+    
+    # Special case for identifying positive sentiment with negative words
     sentiment_label = ''
-    if compound_score > 0.5:
-        sentiment_label = 'positive'
-    elif compound_score < -0.5:
-        sentiment_label = 'negative'
+    
+    # Check if the text contains any words that should be considered as positive in context
+    if contains_negative_word:
+        if any(phrase in text.lower() for phrase in positive_with_negative_words):
+            sentiment_label = 'positive sentiment with negative words'
+        elif compound_score > 0.5:  # If VADER analysis indicates overall positive sentiment
+            sentiment_label = 'positive sentiment with negative words'
+        elif compound_score < -0.5:  # If the sentiment score is clearly negative
+            sentiment_label = 'negative sentiment with negative words'
+        else:
+            sentiment_label = 'neutral sentiment with negative words'
     else:
-        sentiment_label = 'neutral'
+        # If no negative words are detected, proceed with regular sentiment analysis
+        if compound_score > 0.5:
+            sentiment_label = 'positive'
+        elif compound_score < -0.5:
+            sentiment_label = 'negative'
+        else:
+            sentiment_label = 'neutral'
 
     # Returning the sentiment result as a JSON response
     return jsonify({
         'compound': compound_score,
         'sentiment': sentiment_label
     })
-
-
 
 
 

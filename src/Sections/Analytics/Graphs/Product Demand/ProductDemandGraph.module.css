@@ -1,140 +1,101 @@
-/* General Section */
-.section {
-    width: 100%;
-    position: fixed;
-    background-color: transparent;
+/* General styles */
+.highestSellingProducts {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  .highestSellingProducts h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .yearInput {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0.5rem;
     flex-direction: column;
-    overflow: hidden;
-}
-
-/* Graph and Feedback Container (Flexbox Row) */
-.graphFeedbackContainer {
-    display: flex;
-    justify-content: center; /* Align items in a row without wrapping */
-    align-items: center; /* Align items to the top of the container */
-    gap: 1rem; /* Small space between the two sections */
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    background-color: transparent;
-}
-
-/* Graph Container */
-.graphContainer {
-    background-color: transparent;
-    position: relative;
-    display: flex;
-    justify-content: center;
+    gap: 15px;
     align-items: center;
-    flex: 1; /* Ensures the graph container takes up available space */
-    max-width: 100%; /* Ensures the graph doesn't take up too much space */
-}
-
-/* Feedback Section */
-.feedbackGraph {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 25%; /* Limits the width of the feedback section */
-    flex: none; /* Prevents the feedback section from growing */
-    text-align: left;
-    color: #272626;
-    overflow-y: scroll; /* Allows vertical scrolling */
-    max-height: 400px; /* Set a max height to enable scrolling */
-}
-
-/* Hide the scrollbar */
-.feedbackGraph::-webkit-scrollbar {
-    display: none; /* Hides the scrollbar */
-}
-
-
-/* Graph Styles */
-.customerReviewsGraph, .feedbackGraph {
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-
-.salesGraph {
-    width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    background-color: transparent;
-}
-
-/* Loading and Error States */
-.loading,
-.error {
-    color: #3e2723;
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-/* Insights Tables */
-.insightsContainer {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-    text-align: left;
-}
-
-.title {
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: #333;
-}
-
-.insight {
-    margin-bottom: 1rem;
-}
-
-.insight h3 {
+  }
+  
+  .yearInput label {
     font-size: 1rem;
-    margin-bottom: 0.5rem;
-    color: #444;
-}
-
-.insight p {
-    font-size: 0.8rem;
-    color: #555;
-}
-
-/* Tables for Insights */
-table {
+    margin-bottom: 5px;
+  }
+  
+  .yearInput input {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-}
-
-th, td {
-    padding: 0.5rem;
-    text-align: left;
-}
-
-th {
-    background-color: #f4f4f4;
-}
-
-td {
-    border-bottom: 1px solid #ddd;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 768px) {
-    .graphFeedbackContainer {
-        flex-direction: column; /* Stack items vertically on small screens */
+    max-width: 250px;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+  }
+  
+  .yearInput button {
+    padding: 10px 15px;
+    background-color: #4caf50;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .yearInput button:disabled {
+    background-color: #ddd;
+  }
+  
+  .error {
+    color: red;
+    font-size: 1.2rem;
+    margin-top: 15px;
+  }
+  
+  .productData {
+    margin-top: 30px;
+    max-width: 100%;
+  }
+  
+  /* Make the chart responsive */
+  @media (max-width: 768px) {
+    .highestSellingProducts {
+      padding: 10px;
     }
-    
-    .graphContainer, .feedbackGraph {
-        width: 100%; /* Ensure both sections take up full width */
-        max-width: 100%; /* Avoid max-width limitation on small screens */
+  
+    .yearInput {
+      width: 100%;
+      gap: 10px;
     }
-}
+  
+    .yearInput input,
+    .yearInput button {
+      width: 100%;
+      max-width: 100%;
+    }
+  
+    .highestSellingProducts h1 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  /* Ensure the chart is responsive on smaller screens */
+  @media (max-width: 480px) {
+    .highestSellingProducts h1 {
+      font-size: 1.25rem;
+    }
+  
+    .yearInput {
+      gap: 8px;
+    }
+  
+    .yearInput input {
+      font-size: 0.9rem;
+    }
+  
+    .yearInput button {
+      font-size: 0.9rem;
+    }
+  }
+  

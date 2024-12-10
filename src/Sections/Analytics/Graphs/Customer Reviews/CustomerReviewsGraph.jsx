@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import styles from './CustomerReviewsGraph.module.css'; // Assuming the CSS file is named CustomerReviewsGraph.module.css
+import { Pie } from 'react-chartjs-2'; // Import Pie chart from react-chartjs-2
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'; // Import necessary components from chart.js
+import styles from './CustomerReviewsGraph.module.css';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const CustomerReviewsGraph = () => {
   const [graphImage, setGraphImage] = useState(null);
@@ -13,7 +18,7 @@ const CustomerReviewsGraph = () => {
       try {
         setLoading(true);
 
-        // Fetch the graph image
+        // Fetch the graph image (not used in the pie chart version)
         const graphResponse = await axios.post(
           'http://localhost:5001/feedback-graph',
           {},
@@ -56,6 +61,28 @@ const CustomerReviewsGraph = () => {
     }
   };
 
+  const pieChartData = () => {
+    if (!feedbackStats) return null;
+
+    const { positive, negative, neutral } = feedbackStats;
+    const total = positive + negative + neutral;
+
+    return {
+      labels: ['Positive', 'Negative', 'Neutral'],
+      datasets: [
+        {
+          data: [
+            (positive / total) * 100,
+            (negative / total) * 100,
+            (neutral / total) * 100,
+          ],
+          backgroundColor: ['#4caf50', '#f44336', '#9e9e9e'],
+          hoverBackgroundColor: ['#388e3c', '#d32f2f', '#616161'],
+        },
+      ],
+    };
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading data...</div>;
   }
@@ -67,13 +94,11 @@ const CustomerReviewsGraph = () => {
   return (
     <section className={styles.section}>
       <div className={styles.graphContainer}>
-        {graphImage ? (
+        {feedbackStats ? (
           <>
-            <img
-              src={graphImage}
-              alt="Customer Feedback Graph"
-              className={styles.customerReviewsGraph}
-            />
+            <div className={styles.pieChart}>
+              <Pie data={pieChartData()} />
+            </div>
             <div className={styles.feedbackGraph}>
               <strong>Insights: </strong>
               <p>{generateDynamicInsight()}</p>
