@@ -1,50 +1,69 @@
-/* Container for the filter section */
+/* SalesForecastingInsightsGraph.module.css */
+
+/* Section containing the entire graph */
+.section {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Title styling */
+h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Filter container for year selection */
 .filterContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    background-color: #f9f9f9; /* Light background to separate the filter */
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Title for the year selection filter */
+.yearFilterTitle {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+/* Container for select dropdown */
+.selectContainer1 {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+/* Year select dropdown styling */
+.yearSelect1 {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  width: 150px;
+  color: #0e0e0e;
+}
+
+/* Graph container to make chart larger and responsive */
+.graphContainer {
+  position: relative;
+  width: 100%;
+  max-width: 1200px; /* Set a max width for large screens */
+  height: 500px; /* Set the height to make the chart larger */
+  margin: 0 auto; /* Center the chart */
+}
+
+/* Canvas element styling for responsiveness */
+.graphContainer canvas {
+  width: 100% !important; /* Make sure the canvas takes 100% of its container */
+  height: 100% !important; /* Ensure the canvas height is 100% */
+}
+
+/* Optional: Add responsiveness to make it scale properly */
+@media (max-width: 768px) {
+  .graphContainer {
+    height: 400px; /* Adjust the height for smaller screens */
   }
-  
-  .yearFilterTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 10px;
+}
+
+@media (max-width: 480px) {
+  .graphContainer {
+    height: 300px; /* Further adjust for smaller mobile screens */
   }
-  
-  .selectContainer1 {
-    width: 100%;
-    max-width: 300px; /* Limit the width to ensure a neat appearance */
-  }
-  
-  .yearSelect1 {
-    width: 100%;
-    padding: 10px;
-    color: #0e0e0e;
-    font-size: 1rem;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  /* Style for the select dropdown */
-  .yearSelect:focus {
-    outline: none;
-    border-color: #007bff; /* Highlight on focus */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-  }
-  
-  /* Ensure select container is responsive */
-  @media (max-width: 768px) {
-    .selectContainer {
-      width: 100%; /* Full width on smaller screens */
-    }
-  }
-  
+}
