@@ -3,7 +3,8 @@ import styles from './SalesTodayCard.module.css';
 
 function SalesTodayCard() { 
     const [sales, setSales] = useState([]);
-    const [salesToday, setSalesToday] = useState(0); 
+    const [filteredSales, setFilteredSales] = useState(0); // State to hold filtered sales data
+    const [selectedDate, setSelectedDate] = useState(''); // State for selected date
 
     const getSales = async () => {
         try {
@@ -13,28 +14,27 @@ function SalesTodayCard() {
             });
             const jsonData = await response.json();
             setSales(jsonData); // Update sales state with fetched data
-            calculateSalesToday(jsonData); // Calculate sales for today after fetching data
-
         } catch (err) {
             console.error('Error fetching sales:', err.message);
         }
     };
 
-    const calculateSalesToday = (salesData) => {
-        const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const calculateSales = (salesData, dateFilter) => {
+        const today = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+        const todayDate = new Date(today).toLocaleDateString('en-CA'); // Using 'en-CA' for YYYY-MM-DD format
+        
         let totalSales = 0;
     
-        // Loop through sales data to sum today's sales
         salesData.forEach(sale => {
-            const saleDate = new Date(sale.date).toISOString().split('T')[0]; // Format the sale date to YYYY-MM-DD
-            if (saleDate === today) {
-                totalSales += parseFloat(sale.gross_sales); // Assuming the sales data has a `gross_sales` field and converting it to a number
+            const saleDate = sale.date; // Assuming sale.date is in YYYY-MM-DD format
+            if ((dateFilter === 'today' && saleDate === todayDate) || 
+                (dateFilter !== 'today' && saleDate === dateFilter)) {
+                totalSales += parseFloat(sale.gross_sales); // Assuming the sales data has a `gross_sales` field
             }
         });
     
-        setSalesToday(totalSales); // Set the total sales for today
+        setFilteredSales(totalSales); // Set the filtered sales
     };
-    
 
     // Format the sales value to include commas and two decimal places
     const formatCurrency = (amount) => {
@@ -46,19 +46,45 @@ function SalesTodayCard() {
         }).format(amount);
     };
 
+    // Handle date change from input field
+    const handleDateChange = (e) => {
+        setSelectedDate(e.target.value); // Update the selected date
+    };
+
+    // Recalculate sales automatically when selectedDate changes
     useEffect(() => {
-        getSales();
-    }, []); // Fetch sales data when the component mounts
+        if (sales.length > 0) {
+            if (selectedDate) {
+                calculateSales(sales, selectedDate); // Recalculate based on selected date
+            } else {
+                calculateSales(sales, 'today'); // Default to today's sales if no date is selected
+            }
+        }
+    }, [selectedDate, sales]); // Dependency on selectedDate and sales to trigger recalculation
+
+    useEffect(() => {
+        getSales(); // Fetch sales data when the component mounts
+    }, []);
 
     return (
         <div className={styles.card}>
-            <h1 className={styles.cardHeaderTxt}>Sales Today:</h1>
+            <h1 className={styles.cardHeaderTxt}>Sales</h1>
+            
+            <div className={styles.dateFilter}>
+                <label htmlFor="dateFilter">Select Date: </label>
+                <input 
+                    type="date" 
+                    id="dateFilter" 
+                    value={selectedDate} 
+                    onChange={handleDateChange} 
+                />
+            </div>
+            
             <div className={styles.salesText}>
-                {formatCurrency(salesToday)}
+                {formatCurrency(filteredSales)}
             </div>
         </div>
     );
-    
 }
 
 export default SalesTodayCard;
