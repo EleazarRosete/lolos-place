@@ -1,5 +1,5 @@
 {
-  "name": "pos-sytem",
+  "name": "pos-system",
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
@@ -11,7 +11,9 @@
     "start": "node backend/server.js",
     "start-frontend": "vite",
     "start-backend": "python backend/app.py",
-    "dev:all": "concurrently \"npm run start\" \"npm run start-frontend\" \"npm run start-backend\""
+    "dev:all": "concurrently \"npm run start-server\" \"npm run start-frontend\" \"npm run start-backend\"",
+    "dev:server": "nodemon -r dotenv/config backend/server.js",
+    "start-server": "cross-env NODE_ENV=development node backend/server.js"
   },
   "dependencies": {
     "@emotion/react": "^11.13.5",
@@ -22,7 +24,7 @@
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.7",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.13.0",
@@ -43,6 +45,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.2",
     "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.11.1",
     "eslint-plugin-react": "^7.37.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",

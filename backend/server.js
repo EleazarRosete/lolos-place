@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors'); 
 const multer = require('multer');
@@ -8,7 +10,6 @@ const pool = require('../db');
 const admin = process.env.ADMIN_ID;
 
 
-
 const feedback = require('./feedback/routes');
 const menu = require('./menu/routes');
 const order = require('./order/routes');
@@ -16,10 +17,14 @@ const payment = require('./payment/routes');
 const sales = require('./sales/routes');
 const purchases = require('./purchases/routes');
 
-
+console.log('PORT:', process.env.PORT);  // Check if PORT is loaded
+console.log('Admin ID:', process.env.ADMIN_ID);
+console.log('PayMongo Secret Key:', process.env.PAYMONGO_SECRET_KEY);
 
 const app = express();
-const port = process.env.PORT || 5000;  // Now using the PORT from .env
+
+
+const port = process.env.PORT;  // Now using the PORT from .env
 
 // Use the PayMongo secret key from .env
 const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
