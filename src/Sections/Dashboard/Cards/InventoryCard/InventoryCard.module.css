@@ -1,9 +1,3 @@
-.cardHeaderTxt {
-    font-size: 1rem;
-    font-weight: 900;
-    color: #503B36;
-}
-
 /* Card Styles */
 .card {
     width: 100%;
@@ -25,7 +19,6 @@
     -webkit-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);
     -moz-box-shadow: 0px 8px 8px 0px rgba(62,39,35,1);   
     border-top: 1px solid #3e2723;
-
 }
 
 /* Stock Indicator */
@@ -44,7 +37,6 @@
     text-align: center;
     transition: background-color 0.3s ease-in-out;
     cursor: pointer;
-
 }
 
 /* High and Low Stocks Background Colors */
@@ -56,4 +48,91 @@
 .lowStocks {
     background-color: rgba(178, 34, 34, 0.9); /* Firebrick red for low stocks */
     color: #0E0E0E; /* Text color for low stocks */
+}
+
+/* Modal Styles */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(14, 14, 14, 0.5);
+    z-index: 100;
+}
+
+.modalContent {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #FEF7E1;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 30%;
+    height: 20%;
+    max-width: 600px;
+    padding: 20px;
+    z-index: 1000;
+}
+
+/* Modal Close Button */
+.closeModalButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card {
+        max-width: 90%; /* Increase card width for tablets and mobile devices */
+        padding: 1rem;
+    }
+
+    .cardHeaderTxt {
+        font-size: 1.2rem; /* Adjust font size for mobile */
+    }
+
+    .card .stockIndicator {
+        font-size: 0.9rem; /* Slightly larger font size on mobile */
+        height: 12vh;
+    }
+
+    .modalContent {
+        width: 70%; /* Increase modal width for mobile */
+        height: 40%; /* Adjust height for mobile */
+    }
+
+    .modalOverlay {
+        background-color: rgba(14, 14, 14, 0.6); /* Slightly darker overlay for better visibility */
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        max-width: 95%; /* Full-width card on small mobile devices */
+    }
+
+    .cardHeaderTxt {
+        font-size: 1rem; /* Adjust font size for small devices */
+    }
+
+    .card .stockIndicator {
+        font-size: 1rem; /* Larger font size for smaller screens */
+        height: 15vh;
+    }
+
+    .modalContent {
+        width: 85%; /* Modal takes more space on small screens */
+        height: 50%; /* Increase modal height */
+    }
+
+    .modalOverlay {
+        background-color: rgba(14, 14, 14, 0.7); /* Darker overlay for better visibility */
+    }
 }

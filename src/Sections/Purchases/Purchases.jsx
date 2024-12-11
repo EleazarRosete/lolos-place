@@ -13,6 +13,7 @@ const Purchases = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [orderTypeFilter, setOrderTypeFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc'); // Add sortOrder state
 
   const fetchOrders = async () => {
     try {
@@ -24,15 +25,18 @@ const Purchases = () => {
     } catch (err) {
       setError('Failed to fetch orders. Please try again later.');
     }
+  
   };
 
   const fetchOrderHistory = async () => {
     try {
       const response = await axios.get('http://localhost:5000/order/order-history');
       setAllOrders(response.data);
+      console.log("ALL ORDERS",allOrders);
     } catch (err) {
       setError('Failed to fetch order history. Please try again later.');
     }
+
   };
 
   const fetchDeliveries = async () => {
@@ -65,6 +69,10 @@ const Purchases = () => {
     fetchData();
   }, []);
 
+  const handleSortChange = () => {
+    setSortOrder((prevSortOrder) => (prevSortOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
   const filterOrderType = (order) => {
     const matchingOrder = allOrders.find((allOrder) => allOrder.order_id === order.order_id);
     if (!matchingOrder) return order.order_type;
@@ -78,8 +86,13 @@ const Purchases = () => {
     }
   };
 
-  const sortedOrders = orders.sort((a, b) => b.order_id - a.order_id);
-  const sortedAllOrders = allOrders.sort((a, b) => b.order_id - a.order_id);
+  const sortedOrders = orders.sort((a, b) => {
+    return sortOrder === 'asc' ? a.order_id - b.order_id : b.order_id - a.order_id;
+  });
+
+  const sortedAllOrders = allOrders.sort((a, b) => {
+    return sortOrder === 'asc' ? a.order_id - b.order_id : b.order_id - a.order_id;
+  });
 
   const toggleView = () => {
     setView((prevView) => (prevView === 'orders' ? 'orderHistory' : 'orders'));
@@ -96,27 +109,61 @@ const Purchases = () => {
   };
 
   const handleServeOrder = async () => {
-    try {
-      const response = await axios.put(`http://localhost:5000/order/order-served/${selectedOrderId}`);
-      if (response.status === 200) {
-        await fetchOrders();
-        await fetchOrderHistory();
-        handleCloseModal();
-      }
-    } catch (error) {
-      alert('Failed to update order status. Please try again later.');
-    }
-  };
+    console.log("ODELIVERY ID", deliveries);
+    const matchedDelivery = deliveries.find(delivery => delivery.order_id === selectedOrderId);
 
-  const filteredOrders = sortedOrders.filter((order) => {
+    if (matchedDelivery) {
+        try {
+            const response = await fetch(`http://localhost:5000/order/update-delivery/${matchedDelivery.delivery_id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "Delivered" }),
+            });
+            if (response.ok) {
+                setDeliveries(prev =>
+                    prev.filter(delivery => delivery.delivery_id !== matchedDelivery.delivery_id)
+                );
+                closeModal();
+            } else {
+                console.error("Failed to update delivery status.");
+            }
+        } catch (err) {
+            console.error('Error updating delivery status:', err.message);
+        }
+    }
+
+    try {
+        const response = await axios.put(`http://localhost:5000/order/order-served/${selectedOrderId}`);
+        if (response.status === 200) {
+            await fetchOrders();
+            await fetchOrderHistory();
+            handleCloseModal();
+        }
+    } catch (error) {
+        alert('Failed to update order status. Please try again later.');
+    }
+};
+
+  const filteredOrders = (view === 'orders' && orderTypeFilter === 'deliveries'
+    ? sortedAllOrders // Use sortedAllOrders for deliveries
+    : sortedOrders // Otherwise, use sortedOrders
+  ).filter((order) => {
     const ordertype = filterOrderType(order) || '';
     const searchQueryLower = searchQuery.toLowerCase();
+  
+    // Match order ID to deliveries and check the status
+    const matchingDelivery = deliveries.find(delivery => delivery.order_id === order.order_id);
+    const isDeliveryPending = matchingDelivery ? matchingDelivery.delivery_status === 'Pending' : false;
+  
     return (
       (order.order_id?.toString().toLowerCase().includes(searchQueryLower) || // Search by order_id
       ordertype.toString().toLowerCase().includes(searchQueryLower)) &&
-      (orderTypeFilter ? ordertype.includes(orderTypeFilter) : true)
+      (orderTypeFilter ? ordertype.includes(orderTypeFilter) : true) &&
+      (orderTypeFilter === 'deliveries' ? isDeliveryPending : true) // Filter deliveries with pending status
     );
   });
+  
+  
 
   const filteredAllOrders = sortedAllOrders.filter((order) => {
     const ordertype = filterOrderType(order) || '';
@@ -152,9 +199,12 @@ const Purchases = () => {
           type="text"
           placeholder="Search by Order ID"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} // Handle case-insensitive search
+          onChange={(e) => setSearchQuery(e.target.value)}
           className={styles.searchInput}
         />
+        <button onClick={handleSortChange}>
+          Sort Order {sortOrder === 'asc' ? '▲' : '▼'}
+        </button>
         <button className={styles.buttonOrderHistory} onClick={toggleView}>
           {view === 'orders' ? 'View Order History' : 'View Pending Orders'}
         </button>
@@ -190,6 +240,9 @@ const Purchases = () => {
             <button onClick={() => setOrderTypeFilter('take-out')} className={styles.filterButton}>
               Take Out
             </button>
+            <button onClick={() => setOrderTypeFilter('deliveries')} className={styles.filterButton}>
+              Deliveries
+            </button>
           </div>
         )}
       </div>
@@ -210,6 +263,8 @@ const Purchases = () => {
                   return (
                     <li key={order.order_id} className={styles.orderItem}>
                       <h3>Order #{order.order_id}</h3>
+                      <p>Name: {order.customer_name ? order.customer_name : `${order.firstName} ${order.lastName}`}</p>                      
+                      <p>Number of people: {order.number_of_people ? order.number_of_people : "2"}</p>
                       <p>Date: {formatDate(order.date)}</p>
                       <p>Time: {formatTime(order.time)}</p>
                       <p>Items:</p>
@@ -242,6 +297,10 @@ const Purchases = () => {
                 return (
                   <li key={order.order_id} className={styles.orderItem}>
                     <h3>Order #{order.order_id}</h3>
+                    <p>Name: {order.firstName && order.lastName ? `${order.firstName} ${order.lastName}` : "Lolo's Place"}</p>
+
+<p>Number of people: {order.numberOfPeople ? order.numberOfPeople : "1"}</p>
+
                     <p>Date: {formatDate(order.date)}</p>
                     <p>Time: {formatTime(order.time)}</p>
                     <p>Items:</p>
@@ -262,6 +321,7 @@ const Purchases = () => {
           </div>
         )}
       </div>
+
       {modalOpen && selectedOrderId && (
         <div className={styles.modalOrders}>
         <div className={styles.modalOrder}>

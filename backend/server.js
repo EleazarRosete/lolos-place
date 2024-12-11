@@ -62,33 +62,42 @@ app.use('/purchases',purchases);
 
 
 
-
-
-
-
-
-
-
-
-  
 app.post('/api/feedback', async (req, res) => {
-  const { name, comment, compound_score, sentiment } = req.body;
+  const { name, comment, feedbackType, compound_score, sentiment } = req.body;
 
+  // Validate required fields
   if (!name || !comment || !compound_score || !sentiment) {
-      return res.status(400).json({ message: 'Name, comment, score and sentiment are required.' });
+    return res.status(400).json({ message: 'Name, comment, score, sentiment, and feedback type are required.' });
   }
+
+  // Ensure feedbackType is a string if it's an array
+  const feedbackTypeString = Array.isArray(feedbackType) ? feedbackType.join(', ') : feedbackType;
 
   try {
-      const result = await pool.query(
-          'INSERT INTO feedback (name, comment, date, compound_score, sentiment) VALUES ($1, $2, NOW(), $3, $4) RETURNING *',
-          [name, comment, compound_score, sentiment]
-      );
-      res.status(201).json({ message: 'Feedback submitted successfully!', feedback: result.rows[0] });
-  } catch (error) {
-      console.error('Error saving feedback:', error);
-      res.status(500).json({ message: 'Server error while submitting feedback', error: error.message });
+    // Insert feedback data into the database
+    const query = `
+      INSERT INTO feedback (name, comment, date, compound_score, sentiment, feedback_type)
+      VALUES ($1, $2, NOW(), $3, $4, $5) RETURNING *`;
+    const values = [name, comment, compound_score, sentiment, feedbackTypeString];
+
+    const result = await pool.query(query, values);
+
+    res.status(201).json({
+      message: 'Feedback submitted successfully!',
+      feedback: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error saving feedback:', err);
+    res.status(500).json({ message: 'Server error while submitting feedback', error: err.message });
   }
 });
+
+
+
+
+
+
+
 
   
 
@@ -577,17 +586,35 @@ app.get('/api/top-best-sellers', async (req, res) => {
 
 app.get('/api/order-history', async (req, res) => {
   const { user_id } = req.query;
-  let orderItems = [];  // Use 'let' instead of 'const'
 
   if (!user_id) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
   try {
+    // Fetch order and user data in a single query by joining users and orders
     const result = await pool.query(
       `
-      SELECT o.order_id, o.user_id, o.mop, o.total_amount, o.order_type, o.date, o.time, o.delivery, o.reservation_id
+      SELECT 
+        o.order_id, 
+        o.user_id, 
+        o.mop, 
+        o.total_amount, 
+        o.order_type, 
+        o.date, 
+        o.time, 
+        o.delivery, 
+        o.reservation_id, 
+        o.status, 
+        o.customer_name, 
+        o.number_of_people,
+        u.first_name, 
+        u.last_name, 
+        u.email, 
+        u.phone, 
+        u.address
       FROM orders o
+      JOIN users u ON o.user_id = u.user_id
       WHERE o.user_id = $1
       ORDER BY o.date DESC;
       `,
@@ -595,6 +622,7 @@ app.get('/api/order-history', async (req, res) => {
     );
 
     const orderIds = result.rows.map(order => order.order_id);
+
     const itemsResult = await pool.query(
       `
       SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
@@ -611,38 +639,38 @@ app.get('/api/order-history', async (req, res) => {
       FROM reservations r
       WHERE r.reservation_id = ANY($1);
       `,
-      [orderIds]
+      [result.rows.map(order => order.reservation_id).filter(Boolean)]
     );
 
-    const groupedOrders = result.rows.reduce((acc, order) => {
-      const existingOrder = acc.find(o => o.order_id === order.order_id);
-      orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
-
+    const groupedOrders = result.rows.map(order => {
+      const orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
       const reservationDetails = order.reservation_id
         ? reservationResult.rows.find(r => r.reservation_id === order.reservation_id)
         : null;
 
-      if (existingOrder) {
-        existingOrder.items.push(...orderItems); // Add items for the existing order
-      } else {
-        acc.push({
-          order_id: order.order_id,
-          date: order.date,
-          time: order.time,
-          total_amount: parseFloat(order.total_amount),
-          mop: order.mop,
-          delivery: order.delivery,
-          orderType: order.order_type,
-          reservation_id: order.reservation_id,
-          reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
-          reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
-          items: orderItems,
-        });
-      }
-      return acc;
-    }, []);
-
-    console.log(groupedOrders);  // Log the grouped orders if needed
+      return {
+        order_id: order.order_id,
+        user_id: order.user_id,
+        date: order.date,
+        time: order.time,
+        total_amount: parseFloat(order.total_amount),
+        mop: order.mop,
+        delivery: order.delivery,
+        orderType: order.order_type,
+        reservation_id: order.reservation_id,
+        status: order.status,
+        customerName: order.customer_name,
+        numberOfPeople: order.number_of_people,
+        firstName: order.first_name,
+        lastName: order.last_name,
+        email: order.email,
+        phone: order.phone,
+        address: order.address,
+        reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
+        reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
+        items: orderItems,
+      };
+    });
 
     res.json(groupedOrders);
   } catch (error) {
@@ -651,20 +679,37 @@ app.get('/api/order-history', async (req, res) => {
   }
 });
 
-
 app.get('/order/order-history', async (req, res) => {
-  let orderItems = []; // Use 'let' instead of 'const'
-
   try {
+    // Fetch all orders and users in a single query by joining users and orders
     const result = await pool.query(
       `
-      SELECT o.order_id, o.user_id, o.mop, o.total_amount, o.order_type, o.date, o.time, o.delivery, o.reservation_id
+      SELECT 
+        o.order_id, 
+        o.user_id, 
+        o.mop, 
+        o.total_amount, 
+        o.order_type, 
+        o.date, 
+        o.time, 
+        o.delivery, 
+        o.reservation_id, 
+        o.status, 
+        o.customer_name, 
+        o.number_of_people,
+        u.first_name, 
+        u.last_name, 
+        u.email, 
+        u.phone, 
+        u.address
       FROM orders o
+      JOIN users u ON o.user_id = u.user_id
       ORDER BY o.date DESC;
       `
     );
 
     const orderIds = result.rows.map(order => order.order_id);
+
     const itemsResult = await pool.query(
       `
       SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
@@ -681,39 +726,38 @@ app.get('/order/order-history', async (req, res) => {
       FROM reservations r
       WHERE r.reservation_id = ANY($1);
       `,
-      [orderIds]
+      [result.rows.map(order => order.reservation_id).filter(Boolean)]
     );
 
-    const groupedOrders = result.rows.reduce((acc, order) => {
-      const existingOrder = acc.find(o => o.order_id === order.order_id);
-      orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
-
+    const groupedOrders = result.rows.map(order => {
+      const orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
       const reservationDetails = order.reservation_id
         ? reservationResult.rows.find(r => r.reservation_id === order.reservation_id)
         : null;
 
-      if (existingOrder) {
-        existingOrder.items.push(...orderItems); // Add items for the existing order
-      } else {
-        acc.push({
-          order_id: order.order_id,
-          user_id: order.user_id,
-          date: order.date,
-          time: order.time,
-          total_amount: parseFloat(order.total_amount),
-          mop: order.mop,
-          delivery: order.delivery,
-          orderType: order.order_type,
-          reservation_id: order.reservation_id,
-          reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
-          reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
-          items: orderItems,
-        });
-      }
-      return acc;
-    }, []);
-
-    console.log(groupedOrders); // Log the grouped orders if needed
+      return {
+        order_id: order.order_id,
+        user_id: order.user_id,
+        date: order.date,
+        time: order.time,
+        total_amount: parseFloat(order.total_amount),
+        mop: order.mop,
+        delivery: order.delivery,
+        orderType: order.order_type,
+        reservation_id: order.reservation_id,
+        status: order.status,
+        customerName: order.customer_name,
+        numberOfPeople: order.number_of_people,
+        firstName: order.first_name,
+        lastName: order.last_name,
+        email: order.email,
+        phone: order.phone,
+        address: order.address,
+        reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
+        reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
+        items: orderItems,
+      };
+    });
 
     res.json(groupedOrders);
   } catch (error) {
@@ -721,7 +765,6 @@ app.get('/order/order-history', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
   }
 });
-
 
 
 

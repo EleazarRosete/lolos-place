@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'; // Ensure you have this import for Link
 const DeliveryAndReservation = () => {
   // Placeholder function for handling order type clicks
   const handleOrderType = (type) => {
+    setShowCart(false);
     console.log(`${type} selected`);
   };
 

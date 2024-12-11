@@ -141,30 +141,7 @@ function ReservationCard() {
                 ))
             ) : (
                 <p className={styles.noReservationTxt}>No Reservations Today</p>
-            )}
-
-            <h2 className={styles.txtStyles}>Upcoming Reservations</h2>
-            {reservations.upcoming.length > 0 ? (
-                reservations.upcoming.map(({ reservation_id, first_name, last_name, guest_number, reservation_date, reservation_time }) => (
-                    <div key={reservation_id} className={styles.reservationItem}>
-                        <p><strong>Guest number:</strong> {reservation_id}</p>
-                        {orders
-                            .filter(order => order.reservation_id === reservation_id)
-                            .map(order => (
-                                <p key={order.order_id}><strong>Order ID:</strong> #{order.order_id}</p>
-                            ))}
-                        <p><strong>Name:</strong> {first_name} {last_name}</p>
-                        <p><strong>Reservation Date:</strong> {formatDate(reservation_date)}</p>
-                        <p><strong>Reservation Time:</strong> {formatTime(reservation_time)}</p>
-                        <button 
-                            className={styles.detailsButton}
-                            onClick={() => openModal({ reservation_id, guest_number, customer_name: `${first_name} ${last_name}`, reservation_date })}
-                        >
-                            View Details
-                        </button>
-                    </div>
-                ))
-            ) : <p className={styles.noReservationTxt}>No Upcoming Reservations</p>}
+            )}  
 
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
 
@@ -184,7 +161,6 @@ function ReservationCard() {
                 <div className={styles.modal}>
                     <div className={styles.modalContent}>
                         <h3>Reservation Details</h3>
-                        <p><strong>Guest Number:</strong> {modalData.reservation_id}</p>
                         <p><strong>Customer Name:</strong> {modalData.customer_name}</p>
                         <p><strong>Reservation Date:</strong> {formatDate(modalData.reservation_date)}</p>
                         {modalData.order && modalData.order.length > 0 ? (

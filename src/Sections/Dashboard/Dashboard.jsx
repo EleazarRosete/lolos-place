@@ -2,8 +2,8 @@ import styles from './Dashboard.module.css';
 import FeedbackCard from './Cards/FeedbackCard/FeedbackCard';
 import InventoryCard from './Cards/InventoryCard/InventoryCard.jsx';
 import SalesTodayCard from './Cards/SalesTodayCard/SalesTodayCard.jsx';
-import BestProductCard from './Cards/BestProductCard/BestProductCard.jsx';
-import DeliveriesCard from './Cards/DeliveriesCard/DeliveriesCard.jsx';
+import SoldProducts from './Cards/BestProductCard/BestProductCard.jsx';
+import UpcomingReservation from './Cards/DeliveriesCard/DeliveriesCard.jsx';
 import ReservationCard from './Cards/ReservationCard/ReservationCard.jsx';
 
 function Dashboard() { 
@@ -13,9 +13,9 @@ function Dashboard() {
                 <FeedbackCard/>
                 <InventoryCard/>
                 <SalesTodayCard/>
-                <DeliveriesCard/>
                 <ReservationCard/>
-                <BestProductCard/>
+                <UpcomingReservation/>
+                <SoldProducts/>
             </div>
         </section>
     );

@@ -2,146 +2,182 @@
     import styles from './DeliveriesCard.module.css';
 
     function DeliveriesCard() {
-        const [deliveries, setDeliveries] = useState([]);
-        const [orders, setOrders] = useState({});
+        const [reservations, setReservations] = useState({
+            today: [],
+            upcoming: []
+        });
+        const [orders, setOrders] = useState([]);
+        const [showConfirmation, setShowConfirmation] = useState(false);
+        const [reservationToCancel, setReservationToCancel] = useState(null);
+        const [errorMessage, setErrorMessage] = useState("");
+        const [modalData, setModalData] = useState(null);
         const [showModal, setShowModal] = useState(false);
-        const [selectedDelivery, setSelectedDelivery] = useState(null);
-
-        const getDeliveries = async () => {
+    
+        const getReservations = async () => {
             try {
-                const response = await fetch("http://localhost:5000/order/get-delivery", {
+                const response = await fetch("http://localhost:5000/order/get-reservation", {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });
+                if (!response.ok) {
+                    throw new Error("Failed to fetch reservations");
+                }
                 const jsonData = await response.json();
-                const pendingDeliveries = jsonData.filter(delivery => delivery.delivery_status === "Pending");
-                setDeliveries(pendingDeliveries);
+    
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayISOString = today.toISOString().split("T")[0];
+    
+                const sortedReservations = jsonData.sort((a, b) => new Date(a.reservation_date) - new Date(b.reservation_date));
+    
+                const todayReservations = sortedReservations.filter(reservation => {
+                    const reservationDate = new Date(reservation.reservation_date).toISOString().split("T")[0];
+                    return reservationDate === todayISOString;
+                });
+    
+                const upcomingReservations = sortedReservations.filter(reservation => {
+                    const reservationDate = new Date(reservation.reservation_date).toISOString().split("T")[0];
+                    return reservationDate > todayISOString;
+                });
+    
+                setReservations({
+                    today: todayReservations,
+                    upcoming: upcomingReservations
+                });
             } catch (err) {
-                console.error('Error fetching deliveries:', err.message);
+                setErrorMessage(err.message);
+                console.error('Error fetching reservations:', err.message);
             }
-        };
-
-        const getOrderHistory = async () => {
+    
             try {
                 const response = await fetch("http://localhost:5000/order/order-history", {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 });
                 const jsonData = await response.json();
-
-                // Transform order data into a lookup object
-                const orderMap = jsonData.reduce((map, order) => {
-                    map[order.order_id] = order; // Use order_id as the key
-                    return map;
-                }, {});
-                setOrders(orderMap);
+                setOrders(jsonData);
             } catch (err) {
                 console.error('Error fetching order history:', err.message);
             }
         };
-
-        const updateDeliveryStatus = async (id) => {
+    
+        const cancelReservation = async (reservation_id) => {
             try {
-                const response = await fetch(`http://localhost:5000/order/update-delivery/${id}`, {
-                    method: "PUT",
+                const response = await fetch(`http://localhost:5000/order/cancel-reservation/${reservation_id}`, {
+                    method: "DELETE",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: "Delivered" }),
                 });
-                if (response.ok) {
-                    setDeliveries(prev =>
-                        prev.filter(delivery => delivery.delivery_id !== id)
-                    );
-                    closeModal();
-                } else {
-                    console.error("Failed to update delivery status.");
+    
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error canceling reservation: ${response.status} - ${errorText}`);
                 }
+    
+                setReservations(prevState => ({
+                    today: prevState.today.filter(res => res.reservation_id !== reservation_id),
+                    upcoming: prevState.upcoming.filter(res => res.reservation_id !== reservation_id),
+                }));
+                setShowConfirmation(false);
             } catch (err) {
-                console.error('Error updating delivery status:', err.message);
+                setErrorMessage(err.message);
+                console.error('Error canceling reservation:', err.message);
             }
         };
-
-        const openModal = (delivery) => {
-            setSelectedDelivery(delivery);
-            setShowModal(true);
+    
+        const formatTime = (timeStr) => {
+            const date = new Date(`1970-01-01T${timeStr}`);
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
         };
-
-        const closeModal = () => {
-            setSelectedDelivery(null);
+    
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        };
+    
+        const handleCancelClick = (reservation_id) => {
+            setReservationToCancel(reservation_id);
+            setShowConfirmation(true);
             setShowModal(false);
         };
-
+    
+        const openModal = (reservationDetails) => {
+            setModalData(reservationDetails);
+            setShowModal(true);
+            const filteredOrders = orders.filter(o => o.reservation_id === reservationDetails.reservation_id);
+            setModalData(prevData => ({ ...prevData, order: filteredOrders }));
+        };
+    
+        const closeModal = () => {
+            setShowModal(false);
+            setModalData(null);
+        };
+    
         useEffect(() => {
-            getDeliveries();
-            getOrderHistory();
+            getReservations();
         }, []);
 
         return (
             <section className={styles.section}>
-                <h1 className={styles.txtSyles}>Deliveries</h1>
-                {deliveries.length > 0 ? (
-                    deliveries.map(({ delivery_id, order_id, delivery_location, delivery_status }) => {
-                        const order = orders[order_id] || {}; // Get the order details for the current delivery
-                        return (
-                            <div key={order_id} className={styles.deliveryItem}>
-                                <p><strong>Delivery ID:</strong> {delivery_id}</p>
-                                <p><strong>Order ID:</strong> {order_id}</p>
-                                <p><strong>Order Items:</strong></p>
-                                {order.items ? (
-                                    <ul className={styles.itemList}>
-                                        {order.items.map(item => (
-                                            <li key={item.menu_name} className={styles.item}>
-                                                {item.menu_name} - {item.order_quantity}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p>No items found</p>
-                                )}
-                                <p><strong>Location:</strong> {delivery_location}</p>
-                                <p><strong>Status:</strong> {delivery_status}</p>
-
-                                <button
-                                    className={`${styles.deliveryButton} ${styles.pending}`}
-                                    onClick={() => openModal({ delivery_id, order_id, delivery_location })}
-                                >
-                                    Mark as Delivered
-                                </button>
-                            </div>
-
-
-                        );
-                    })
-                ) : (
-                    <p>No pending deliveries found.</p>
-                )}
-
-                {/* Modal */}
-                {showModal && selectedDelivery && (
-                    <div className={styles.modal}>
-                        <div className={styles.modalContent}>
-                            <h3>Confirm Delivery</h3>
-                            <p>Are you sure you want to mark this delivery as delivered?</p>
-                            <p><strong>Delivery ID:</strong> {selectedDelivery.delivery_id}</p>
-                            <p><strong>Order ID:</strong> {selectedDelivery.order_id}</p>
-                            <p><strong>Location:</strong> {selectedDelivery.delivery_location}</p>
-                            <div className={styles.modalActions}>
-                            <button
-                                    className={styles.cancelButton}
-                                    onClick={closeModal}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    className={styles.confirmButton}
-                                    onClick={() => updateDeliveryStatus(selectedDelivery.delivery_id)}
-                                >
-                                    Yes, Delivered
-                                </button>
-
-                            </div>
-                        </div>
+                <h2 className={styles.txtStyles}>Upcoming Reservations</h2>
+                {reservations.upcoming.length > 0 ? (
+                reservations.upcoming.map(({ reservation_id, first_name, last_name, guest_number, reservation_date, reservation_time }) => (
+                    <div key={reservation_id} className={styles.reservationItem}>
+                        <p><strong>Reservation Date:</strong> {formatDate(reservation_date)}</p>
+                        <p><strong>Reservation Time:</strong> {formatTime(reservation_time)}</p>
+                        <button 
+                            className={styles.detailsButton}
+                            onClick={() => openModal({ reservation_id, guest_number, customer_name: `${first_name} ${last_name}`, reservation_date })}
+                        >
+                            View Details
+                        </button>
                     </div>
-                )}
+                ))
+            ) : <p className={styles.noReservationTxt}>No Upcoming Reservations</p>}
+
+{errorMessage && <p className={styles.error}>{errorMessage}</p>}
+
+{showConfirmation && (
+    <div className={styles.confirmationModal}>
+        <div className={styles.modalContent}>
+            <p>Are you sure you want to cancel this reservation?</p>
+            <div className={styles.modalButtons}>
+                <button onClick={() => setShowConfirmation(false)} className={styles.cancelReservationProcess}>Cancel</button>
+                <button onClick={() => cancelReservation(reservationToCancel)} className={styles.confirmReservationCancel}>Confirm</button>
+            </div>
+        </div>
+    </div>
+)}
+
+{showModal && modalData && (
+    <div className={styles.modal}>
+        <div className={styles.modalContent}>
+            <h3>Reservation Details</h3>
+            <p><strong>Customer Name:</strong> {modalData.customer_name}</p>
+            <p><strong>Reservation Date:</strong> {formatDate(modalData.reservation_date)}</p>
+            {modalData.order && modalData.order.length > 0 ? (
+                <div>
+                    <h4>Order Details</h4>
+                    {modalData.order.map(order => (
+                        <div key={order.order_id}>
+                            <p><strong>Order ID:</strong> #{order.order_id}</p>
+                            <ul>
+                                {order.items.map(item => (
+                                    <li key={item.menu_name}>{item.menu_name} - {item.order_quantity}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p>No orders yet!</p>
+            )}
+            <div className={styles.navButtonsReservation}>
+                <button onClick={closeModal} className={styles.closeModalStyles}>Close</button>
+                <button onClick={() => handleCancelClick(modalData.reservation_id)} className={styles.confirmReservationCancel}>Cancel Reservation</button>
+            </div>
+        </div>
+    </div>
+)}
             </section>
         );
     }

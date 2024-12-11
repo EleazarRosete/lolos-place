@@ -3,6 +3,7 @@ import styles from './InventoryCard.module.css';
 
 function InventoryCard() { 
     const [product, setProduct] = useState([]);  // Renamed state to product
+    const [showModal, setShowModal] = useState(false); // State for showing the modal
 
     const getProduct = async () => {
         try {
@@ -25,6 +26,8 @@ function InventoryCard() {
         return "HIGH STOCKS"; // If there are no low stock items
     };
 
+    const toggleModal = () => setShowModal(!showModal); // Toggle modal visibility
+
     useEffect(() => {
         getProduct();
     }, []); // Fetch products when component mounts
@@ -32,11 +35,33 @@ function InventoryCard() {
     return (
         <div className={styles.card}>
             <h1 className={styles.cardHeaderTxt}>Stock Levels:</h1>
-            <div 
+            <button 
                 className={`${styles.stockIndicator} ${product.length === 0 ? styles.highStocks : styles.lowStocks}`}
+                onClick={toggleModal} // Show modal on button click
             >
                 {stockLevel()}
-            </div>
+            </button>
+
+            {/* Modal for displaying products with low stock */}
+            {showModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <button className={styles.closeModalButton} onClick={toggleModal}>X</button>
+                        <h2>Low Stock Products</h2>
+                        <ul>
+                            {product.length > 0 ? (
+                                product.map((item) => (
+                                    <li key={item.menu_id}>
+                                        {item.name} - {item.stocks} in stock
+                                    </li>
+                                ))
+                            ) : (
+                                <li>No low stock items available.</li>
+                            )}
+                        </ul>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

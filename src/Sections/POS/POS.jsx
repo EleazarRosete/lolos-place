@@ -8,6 +8,7 @@ import Failed from '../Payment Result/Failed.jsx';
 
 function POS() {
     const navigate = useNavigate();
+    const [handleAddNameAndNumberOfPeople, setHandleAddNameAndNumberOfPeople] = useState(false);            
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [serviceCharge, setServiceCharge] = useState(0);
@@ -32,13 +33,17 @@ function POS() {
     const [paymentID, setPaymentID] = useState(null);
     const [isPaid, setIsPaid] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [name, setName] = useState("Lolo's Place");
+    const [numberOfPeople, setNumberOfPeople] = useState(1);
     const [paidOrder, setPaidOrder] = useState({
         mop: '',
         total_amount: '' ,
         delivery: '',
         reservation_id: '',
         order_type: '',
-        items: []
+        items: [],
+        customer_name: '',
+        number_of_people: ''
     });
     const [salesData, setSalesData] = useState({
         amount:'',
@@ -107,6 +112,47 @@ function POS() {
         img: '',
         stocks: '',
     });
+
+    
+    const handlePaymentAmount = (paymentAmount) => {
+        const totalAmount = 
+          order.reduce((total, item) => total + item.total, 0) + parseFloat(serviceCharge);
+      
+        if (isNaN(paymentAmount) || paymentAmount <= 0) {
+          alert("Please enter a valid payment amount.");
+          return null;
+        }
+      
+        if (paymentAmount < totalAmount) {
+            const change = (paymentAmount - totalAmount).toFixed(2);
+            setChange(change);
+          return null;
+        }
+      
+        const change = (paymentAmount - totalAmount).toFixed(2);
+      
+        setChange(change);
+        return change;
+      };
+      
+      const handlePaymentInputChange = (event) => {
+        const paymentAmount = parseFloat(event.target.value);
+        if (!isNaN(paymentAmount)) {
+          handlePaymentAmount(paymentAmount);
+        }
+      };
+      
+      const handleProceedButtonClick = () => {
+        const paymentInput = document.querySelector('input[placeholder="Payment Amount"]');
+        const paymentAmount = parseFloat(paymentInput.value);
+      
+        const change = handlePaymentAmount(paymentAmount);
+      
+        if (change !== null) {
+          handleOpenModal();
+        }
+      };
+      
 
     const handleClick = (value) => {
         setInput((prevInput) => prevInput + value);
@@ -289,7 +335,9 @@ function POS() {
                 delivery: ifDelivery === 'true',
                 reservation_id: reservationID,
                 order_type: orderType,
-                items: order
+                items: order,
+                customer_name: name,
+                number_of_people: numberOfPeople
             };
     
             try {
@@ -316,7 +364,7 @@ function POS() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(paidOrder)
                 });
-    
+                console.log("Added Orders!");
                 if (!response.ok) throw new Error(`Error adding order: ${response.statusText}`);
 
                 const salesPromises = order.map(async (orderedItem, i) => {
@@ -392,7 +440,12 @@ function POS() {
         }
     };
     
-
+    const handleOpenModalOrders = () => {
+        console.log("THIS IS UPDATED",name,numberOfPeople);
+        handleGCashPayment();
+        setCashDetails(false);
+        setOrderDetails(true);
+    }
     
     const handleGCashPayment = async () => {
         const admin = 14;
@@ -470,11 +523,13 @@ function POS() {
                             reservation_id: reservationID,
                             order_type: orderType,
                             items: order,
+                            customer_name: name,
+                            number_of_people: numberOfPeople,
                         }),
                     ], // Send paid order as text[]
                 }),
+                
             });
-    
             if (!tempDataResponse.ok) {
                 throw new Error(`Error adding temp data! status: ${tempDataResponse.status}`);
             }
@@ -489,8 +544,7 @@ function POS() {
             console.error("Error during payment and data addition:", error);
         }
     };
-    
-    
+
 
     const processOrder = () => {
         const serviceCharge = order.reduce((total, item) =>(total + item.total) * 0.1, 0);
@@ -508,9 +562,7 @@ function POS() {
         else{
 
                 if(paymentMethod == "GCash"){
-                    handleGCashPayment();
-                    setCashDetails(false);
-                    setOrderDetails(true);
+                    setHandleAddNameAndNumberOfPeople(true);
                 }
                 else{
                     setGCashtDetails(false);
@@ -655,6 +707,7 @@ function POS() {
                                     <p>Qty: {orders.quantity}</p>
                                     <p>Price: ₱{orders.price}</p>
                                     <p>Subtotal: ₱{orders.total}</p>
+                                    <p>Servive charge: 10%</p>
                                 </div>
                             ))
                         ) : (
@@ -685,108 +738,95 @@ function POS() {
                         </label>
 
                     </div>
-
-                    <button className={styles.confirmOrderButton} onClick={processOrder}>
-                        Confirm Order
-                    </button>
-                    <button className={styles.cancelOrderButton} onClick={handleCancelOrder}>
+                        <div className={styles.navOrderDetailButtons}>
+                        <button className={styles.cancelOrderButton} onClick={handleCancelOrder}>
                         Cancel
                     </button>
+                        <button className={styles.confirmOrderButton} onClick={processOrder}>
+                        Confirm Order
+                    </button>
+
+                        </div>
+
                 </div>
                 </div>
             )}
 
-{CashDetails && (
-                    <div className={styles.modalPOS}>
+
+
+{CashDetails && paymentMethod && (
+    <div className={styles.modalPOS}>
         <div className={styles.paymentDetails}>
-          <h1 className={styles.cashHeader}>Cash Payment</h1>
-          <div className={styles.contentContainer}>
-            <div className={styles.calculator}>
-              <div className={styles.display}>
-                <input
-                  type="text"
-                  value={input}
-                  placeholder="Calculator"
-                  readOnly
-                  className={styles.inputData}
-                />
-              </div>
-              <div className={styles.calcButtons}>
-                {/* Calculator Buttons */}
-                <button className={styles.calcButton} onClick={() => handleClick('1')}>1</button>
-                <button className={styles.calcButton} onClick={() => handleClick('2')}>2</button>
-                <button className={styles.calcButton} onClick={() => handleClick('3')}>3</button>
-                <button className={styles.calcButton} onClick={() => handleClick('+')}>+</button>
+            <h1 className={styles.cashHeader}>Cash Payment</h1>
+            <div className={styles.contentContainer}>
 
-                <button className={styles.calcButton} onClick={() => handleClick('4')}>4</button>
-                <button className={styles.calcButton} onClick={() => handleClick('5')}>5</button>
-                <button className={styles.calcButton} onClick={() => handleClick('6')}>6</button>
-                <button className={styles.calcButton} onClick={() => handleClick('-')}>-</button>
+                <div className={styles.details}>
+                    <div className={styles.paymentInfo}>
+                        <input
+                            type="text"
+                            placeholder="Enter your name"
+                            required
+                            onChange={(e) => setName(e.target.value)} // Assuming you have a setter function for name           
+                            value={name}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Number of people"
+                            required
+                            onChange={(e) => setNumberOfPeople(e.target.value)} // Assuming you have a setter function for number of people
+                            value={numberOfPeople}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Payment Amount"
+                            onChange={handlePaymentInputChange}
+                            min="1"
+                            className={styles.paymentAmount}
+                        />
+                        <h1 className={styles.headerPayment}>Order Items:</h1>
+                        <div className={styles.orderItems}>
+                            {order.length > 0 ? (
+                                order.map((orders, index) => (
+                                    <div key={orders.menu_id} className={styles.orderItem}>
+                                        <p className={styles.txtStyles}><strong>{orders.name}</strong></p>
+                                        <p>Qty: {orders.quantity}</p>
+                                        <p>Price: ₱{orders.price}</p>
+                                        <p>Subtotal: ₱{orders.total}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className={styles.pText}>No orders yet</p>
+                            )}
+                        </div>
+                        <h3 className={styles.sum}>
+                            Order Total: ₱{order.reduce((total, item) => total + item.total, 0).toFixed(2)}
+                        </h3>
+                        <h3 className={styles.sum}>
+                            Service charge(10%): ₱{serviceCharge}
+                        </h3>
+                        <h3 className={styles.sum}>
+                            Total Amount: ₱{
+                                (order.reduce((total, item) => total + item.total, 0) + parseFloat(serviceCharge)).toFixed(2)
+                            }
+                        </h3>
+                        <h3 className={styles.sum}>Change: ₱{change}</h3>
+                    </div>
 
-                <button className={styles.calcButton} onClick={() => handleClick('7')}>7</button>
-                <button className={styles.calcButton} onClick={() => handleClick('8')}>8</button>
-                <button className={styles.calcButton} onClick={() => handleClick('9')}>9</button>
-                <button className={styles.calcButton} onClick={() => handleClick('*')}>*</button>
-
-                <button className={styles.calcButton} onClick={() => handleClick('0')}>0</button>
-                <button className={styles.calcButton} onClick={handleClear}>C</button>
-                <button className={styles.calcButton} onClick={handleCalculate}>=</button>
-                <button className={styles.calcButton} onClick={() => handleClick('/')}>/</button>
-              </div>
-            </div>
-
-            <div className={styles.details}>
-              <div className={styles.paymentInfo}>
-              <h1 className={styles.headerPayment}>Order Items:</h1>
-
-                <div className={styles.orderItems}>
-                  {order.length > 0 ? (
-                    order.map((orders, index) => (
-                      <div key={orders.menu_id} className={styles.orderItem}>
-                        <p className={styles.txtStyles}><strong>{orders.name}</strong></p>
-                        <p>Qty: {orders.quantity}</p>
-                        <p>Price: ₱{orders.price}</p>
-                        <p>Subtotal: ₱{orders.total}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className={styles.pText}>No orders yet</p>
-                  )}
+                    <div className={styles.navButton}>
+                        <button className={styles.cancelPaymentButton} onClick={handleCancelPayment}>CANCEL</button>
+                        <button 
+                            onClick={handleOpenModal} 
+                            className={styles.cancelPaymentButton}
+                            disabled={!name || !numberOfPeople} // Disable the button if either name or numPeople is empty
+                        >
+                            PROCEED
+                        </button>
+                    </div>
                 </div>
-                <h3 className={styles.sum}>
-                  Order Total: ₱{order.reduce((total, item) => total + item.total, 0).toFixed(2)}
-                </h3>
-                <h3 className={styles.sum}>
-                  Service charge(10%): ₱{serviceCharge}
-                </h3>
-                <h3 className={styles.sum}>
-  Total Amount: ₱{
-    (order.reduce((total, item) => total + item.total, 0) + parseFloat(serviceCharge)).toFixed(2)
-  }
-</h3>
-
-                <h3 className={styles.sum}>Change: ₱{change}</h3>
-              </div>
-
-              {/* Removed the checkbox, now a modal will handle the PAID state */}
-
-              <div className={styles.navButton}>
-                <button className={styles.cancelPaymentButton} onClick={handleCancelPayment}>CANCEL</button>
-
-                {/* Proceed button, disabled until confirmed */}
-                <button 
-                  onClick={handleOpenModal} 
-                  className={styles.cancelPaymentButton}
-                >
-                  PROCEED
-                </button>
-              </div>
             </div>
-          </div>
         </div>
-        </div>
-
-      )}
+    </div>
+)}
 
                 {receipt && (
                     <div className={styles.modalPOS}>
@@ -804,8 +844,8 @@ function POS() {
       {showModal && (
         <div className={styles.modalPOS}>
           <div className={styles.modalConfirmation}>
-            <h2>Confirm Payment</h2>
-            <p>Are you sure you want to proceed with the payment?</p>
+            <h2 className={styles.modalH2}>Confirm Payment</h2>
+            <p  className={styles.modalP}>Are you sure you want to proceed with the payment?</p>
             <div className={styles.modalButtons}>
               <button onClick={handleCloseModal} className={styles.cancelModalConfirmation}>CANCEL</button>
               <button onClick={submitOrder } disabled={loading} className={styles.cancelModalConfirmation}>CONTINUE</button>
@@ -813,6 +853,41 @@ function POS() {
           </div>
         </div>
       )}
+
+{handleAddNameAndNumberOfPeople && (
+    <div className={styles.modalPOS}>
+        <div className={styles.modalConfirmation1}>
+            <label>Name</label>
+            <input
+                type="text"
+                placeholder="Enter your name"
+                required
+                onChange={(e) => setName(e.target.value)} // Assuming you have a setter function for name
+                value={name}
+            />
+                        <label>Number of people</label>
+
+            <input
+                type="number"
+                placeholder="Number of people"
+                required
+                onChange={(e) => setNumberOfPeople(e.target.value)} // Assuming you have a setter function for number of people
+                value={numberOfPeople}
+            />
+            <div className={styles.navButtonForGcash}>
+            <button className={styles.cancelPaymentButton} onClick={()=> {setHandleAddNameAndNumberOfPeople(false)}}>CANCEL</button>
+                        <button 
+                            onClick={handleOpenModalOrders} 
+                            className={styles.cancelPaymentButton}
+                            disabled={!name || !numberOfPeople} // Disable the button if either name or numPeople is empty
+                        >
+                            PROCEED
+                        </button>
+            </div>
+                                  
+        </div>
+    </div>
+)}
 
 
 
