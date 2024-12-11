@@ -3,10 +3,9 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcryptjs');
-const PAYMONGO_SECRET_KEY = 'sk_test_Uarb4zRpXZb9PXmTHeK1ZTEp';
 const axios = require('axios');
 const pool = require('../db'); 
-const admin = 14;
+const admin = process.env.ADMIN_ID;
 
 
 
@@ -20,7 +19,10 @@ const purchases = require('./purchases/routes');
 
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5000;  // Now using the PORT from .env
+
+// Use the PayMongo secret key from .env
+const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;
 
 app.use(cors()); 
 app.use('/uploads', express.static('uploads'));
