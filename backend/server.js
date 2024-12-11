@@ -17,10 +17,6 @@ const payment = require('./payment/routes');
 const sales = require('./sales/routes');
 const purchases = require('./purchases/routes');
 
-console.log('PORT:', process.env.PORT);  // Check if PORT is loaded
-console.log('Admin ID:', process.env.ADMIN_ID);
-console.log('PayMongo Secret Key:', process.env.PAYMONGO_SECRET_KEY);
-
 const app = express();
 
 
