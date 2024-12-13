@@ -69,6 +69,7 @@ function BestProductCard() {
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}  // Update selected date
                     className={styles.dateInput}
+                    max={new Date().toISOString().split('T')[0]} 
                 />
             </div>
             

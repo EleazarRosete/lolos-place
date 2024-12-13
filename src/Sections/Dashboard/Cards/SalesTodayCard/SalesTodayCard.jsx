@@ -2,9 +2,12 @@ import React, { useState, useEffect } from "react";
 import styles from './SalesTodayCard.module.css';
 
 function SalesTodayCard() { 
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; 
     const [sales, setSales] = useState([]);
     const [filteredSales, setFilteredSales] = useState(0); // State to hold filtered sales data
-    const [selectedDate, setSelectedDate] = useState(''); // State for selected date
+    const [selectedDate, setSelectedDate] = useState(formattedDate);
+    
 
     const getSales = async () => {
         try {
@@ -12,6 +15,9 @@ function SalesTodayCard() {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const jsonData = await response.json();
             setSales(jsonData); // Update sales state with fetched data
         } catch (err) {
@@ -20,8 +26,7 @@ function SalesTodayCard() {
     };
 
     const calculateSales = (salesData, dateFilter) => {
-        const today = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
-        const todayDate = new Date(today).toLocaleDateString('en-CA'); // Using 'en-CA' for YYYY-MM-DD format
+        const todayDate = new Date().toISOString().split('T')[0]; // Ensure correct today's date format
         
         let totalSales = 0;
     
@@ -29,7 +34,7 @@ function SalesTodayCard() {
             const saleDate = sale.date; // Assuming sale.date is in YYYY-MM-DD format
             if ((dateFilter === 'today' && saleDate === todayDate) || 
                 (dateFilter !== 'today' && saleDate === dateFilter)) {
-                totalSales += parseFloat(sale.gross_sales); // Assuming the sales data has a `gross_sales` field
+                totalSales += parseFloat(sale.gross_sales || 0); // Handle potential undefined `gross_sales`
             }
         });
     
@@ -73,11 +78,13 @@ function SalesTodayCard() {
             <div className={styles.dateFilter}>
                 <label htmlFor="dateFilter">Select Date: </label>
                 <input 
-                    type="date" 
-                    id="dateFilter" 
-                    value={selectedDate} 
-                    onChange={handleDateChange} 
-                />
+    type="date" 
+    id="dateFilter" 
+    value={selectedDate} 
+    onChange={handleDateChange} 
+    max={new Date().toISOString().split('T')[0]} // Sets the maximum date to today
+/>
+
             </div>
             
             <div className={styles.salesText}>
