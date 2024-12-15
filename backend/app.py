@@ -12,6 +12,14 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from datetime import datetime  # Import datetime module
 import base64
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from the .env file
+load_dotenv(dotenv_path='./backend/.env')
+admin_id = os.getenv('APP_PORT')
+admin_id = int(admin_id)
+
 
 app = Flask(__name__)
 CORS(app)
@@ -673,4 +681,4 @@ def analyze_sentiment():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=admin_id)
