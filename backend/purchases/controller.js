@@ -1,4 +1,4 @@
-const pool = require('../../db');
+const pool = require('../db');
 const queries = require('./queries');
 const axios = require('axios'); // Import axios
 
@@ -17,7 +17,7 @@ const getPurchases = async (req, res) => {
     } catch (error) {
         // Log the error for debugging
         console.error('Error fetching purchases:', error);
-        
+
         // Return a 500 status for server errors
         res.status(500).json({ error: 'Error fetching purchases' });
     }

@@ -1,8 +1,8 @@
-const pool = require('../../db'); 
+const pool = require('../db');
 const queries = require('./queries');
 
 const addProduct = async (req, res) => {
-    const { name, description, category, price, items,img, stocks} = req.body;
+    const { name, description, category, price, items, img, stocks } = req.body;
 
     const product_price = parseInt(price, 10);
     const product_stock = parseInt(stocks, 10);
@@ -51,13 +51,13 @@ const getProductById = (req, res) => {
         if (results.rows.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.status(200).json(results.rows[0]); 
+        res.status(200).json(results.rows[0]);
     });
 };
 
 const updateProduct = (req, res) => {
     // const menu_id = parseInt(req.params.menu_id); // Correctly parse the menu_id
-    const {menu_id, name, description, category, price, items,img, stocks} = req.body;
+    const { menu_id, name, description, category, price, items, img, stocks } = req.body;
 
     if (!name) {
         return res.status(400).json({ error: 'Product name is required and cannot be null' });
@@ -76,13 +76,13 @@ const updateProduct = (req, res) => {
 
         // Update the product
         pool.query(queries.updateProduct, [
-            name, 
-            description || null, 
-            category || null, 
-            price || null, 
-            items || null, 
-            img || null, 
-            stocks || null, 
+            name,
+            description || null,
+            category || null,
+            price || null,
+            items || null,
+            img || null,
+            stocks || null,
             menu_id // Use menu_id instead of name
         ], (error) => {
             if (error) {

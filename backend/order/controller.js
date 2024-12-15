@@ -1,8 +1,8 @@
-const pool = require('../../db'); 
+const pool = require('../db');
 const queries = require('./queries');
 
 const addProduct = async (req, res) => {
-    const { name, description, category, price, items,img, stocks} = req.body;
+    const { name, description, category, price, items, img, stocks } = req.body;
 
     const product_price = parseInt(price, 10);
     const product_stock = parseInt(stocks, 10);
@@ -48,13 +48,13 @@ const getProductById = (req, res) => {
         if (results.rows.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.status(200).json(results.rows[0]); 
+        res.status(200).json(results.rows[0]);
     });
 };
 
 const updateProduct = (req, res) => {
     // const menu_id = parseInt(req.params.menu_id); // Correctly parse the menu_id
-    const {menu_id, name, description, category, price, items,img, stocks} = req.body;
+    const { menu_id, name, description, category, price, items, img, stocks } = req.body;
 
     if (!name) {
         return res.status(400).json({ error: 'Product name is required and cannot be null' });
@@ -73,13 +73,13 @@ const updateProduct = (req, res) => {
 
         // Update the product
         pool.query(queries.updateProduct, [
-            name, 
-            description || null, 
-            category || null, 
-            price || null, 
-            items || null, 
-            img || null, 
-            stocks || null, 
+            name,
+            description || null,
+            category || null,
+            price || null,
+            items || null,
+            img || null,
+            stocks || null,
             menu_id // Use menu_id instead of name
         ], (error) => {
             if (error) {
@@ -164,42 +164,42 @@ const getCategories = async (req, res) => {
 
 
 const addOrder = async (req, res) => {
-    const { mop, total_amount, delivery, reservation_id, order_type, items,                 customer_name, number_of_people } = req.body;
+    const { mop, total_amount, delivery, reservation_id, order_type, items, customer_name, number_of_people } = req.body;
     const sum = parseInt(total_amount, 10); // Parse total_amount to integer
-  
+
     try {
-      // Using the addOrder query to insert the new order into the database
-      const addResult = await pool.query(queries.addOrder, [
-        mop,
-        sum,
-        delivery,
-        reservation_id,
-        order_type,
-        customer_name,
-        number_of_people
-      ]);
-  
-      // Insert items after order is successfully created
-      for (let item of items) {
-        const orderQuantityQuery = `
+        // Using the addOrder query to insert the new order into the database
+        const addResult = await pool.query(queries.addOrder, [
+            mop,
+            sum,
+            delivery,
+            reservation_id,
+            order_type,
+            customer_name,
+            number_of_people
+        ]);
+
+        // Insert items after order is successfully created
+        for (let item of items) {
+            const orderQuantityQuery = `
           INSERT INTO order_quantities (order_id, menu_id, order_quantity)
           VALUES ($1, $2, $3);
         `;
-        await pool.query(orderQuantityQuery, [addResult.rows[0].order_id, item.menu_id, item.quantity]);
-      }
-  
-      // Return the order_id of the newly inserted order after all operations
-      res.status(201).json({
-        message: 'Order added successfully',
-        orderId: addResult.rows[0].order_id, // Returning the order_id
-      });
-  
+            await pool.query(orderQuantityQuery, [addResult.rows[0].order_id, item.menu_id, item.quantity]);
+        }
+
+        // Return the order_id of the newly inserted order after all operations
+        res.status(201).json({
+            message: 'Order added successfully',
+            orderId: addResult.rows[0].order_id, // Returning the order_id
+        });
+
     } catch (error) {
-      console.error('Error adding order:', error);
-      res.status(500).json({ error: 'Error adding order' });
+        console.error('Error adding order:', error);
+        res.status(500).json({ error: 'Error adding order' });
     }
-  };
-  
+};
+
 
 
 const getOrder = (req, res) => {
@@ -371,7 +371,7 @@ const addTempData = async (req, res) => {
         const addResult = await pool.query(
             `INSERT INTO temp_data ("order", salesdata, paidorder) 
             VALUES ($1, $2, $3) 
-            RETURNING *`, 
+            RETURNING *`,
             [order, salesdata, paidorder]
         );
 

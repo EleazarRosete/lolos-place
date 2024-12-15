@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const pool = require('../db'); 
+const pool = require('./db'); 
 const admin = process.env.ADMIN_ID;
 
 
