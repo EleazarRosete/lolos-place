@@ -4,21 +4,27 @@ const queries = require('./queries');
 const addProduct = async (req, res) => {
     const { name, description, category, price, items, img, stocks } = req.body;
 
-    const product_price = parseInt(price, 10);
-    const product_stock = parseInt(stocks, 10);
+    const product_price = parseFloat(price);  // Convert price to float
+    const product_stock = parseInt(stocks, 10);  // Convert stocks to an integer
+
+    // Ensure 'items' is in JSON format (an array of strings)
+    const items_json = JSON.stringify(items);
 
     try {
-        const addResult = await pool.query(queries.addProduct, [
+        const [result] = await pool.execute(queries.addProduct, [
             name,
             description,
             category,
             product_price,
-            items,
+            items_json,  // Ensure items is properly stringified
             img,
             product_stock
         ]);
 
-        res.status(201).json({ message: 'Product item added successfully', productId: addResult.rows[0].menu_id });
+        // Use LAST_INSERT_ID() to get the last inserted menu_id for MySQL
+        const productId = result.insertId;
+
+        res.status(201).json({ message: 'Product added successfully', productId: productId });
     } catch (error) {
         console.error('Error adding product item:', error);
         res.status(500).json({ error: 'Error adding product item' });
@@ -31,7 +37,7 @@ const addProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
     try {
-        const [rows] = await pool.execute('SELECT * FROM menu_items'); // Adjust table name if needed
+        const [rows] = await pool.execute(queries.getProduct); // Adjust table name if needed
         res.status(200).json(rows); // Return the rows from the query
     } catch (error) {
         console.error('Error fetching Product:', error);
@@ -39,78 +45,90 @@ const getProduct = async (req, res) => {
     }
 };
 
+const getProductById = async (req, res) => {
+    try {
+        const menu_id = parseInt(req.params.menu_id);
 
-const getProductById = (req, res) => {
-    const menu_id = parseInt(req.params.menu_id); // Correctly parse the menu_id
-
-    pool.query(queries.getProductById, [menu_id], (error, results) => {
-        if (error) {
-            console.error('Error fetching Product by menu_id:', error);
-            return res.status(500).json({ error: 'Error fetching Product by menu_id' });
+        if (isNaN(menu_id)) {
+            return res.status(400).json({ error: 'Invalid menu_id' });
         }
-        if (results.rows.length === 0) {
+
+        // Log menu_id for debugging purposes
+        console.log('Fetching product with menu_id:', menu_id);
+
+        // Query the database
+        const [results] = await pool.execute(queries.getProductById, [menu_id]);
+
+        if (results.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
-        res.status(200).json(results.rows[0]);
-    });
+
+        return res.status(200).json(results[0]);
+    } catch (error) {
+        console.error('Error fetching product by menu_id:', error);
+        return res.status(500).json({ error: 'Error fetching product by menu_id' });
+    }
 };
 
-const updateProduct = (req, res) => {
-    // const menu_id = parseInt(req.params.menu_id); // Correctly parse the menu_id
-    const { menu_id, name, description, category, price, items, img, stocks } = req.body;
 
-    if (!name) {
-        return res.status(400).json({ error: 'Product name is required and cannot be null' });
-    }
+const updateProduct = async (req, res) => {
+    try {
+        const { menu_id } = req.params;
+        const { name, description, category, price, items, img, stocks } = req.body;
 
-    // Fetch the product by ID first
-    pool.query(queries.getProductById, [menu_id], (error, results) => {
-        if (error) {
-            console.error('Error fetching product:', error);
-            return res.status(500).json({ error: 'Error fetching product' });
+        if (!menu_id) {
+            return res.status(400).json({ error: 'menu_id is required in the URL' });
         }
-        // If no product found
-        if (results.rows.length === 0) {
+        if (!name || !price || !stocks) {
+            return res.status(400).json({ error: 'Name, price, and stocks are required fields' });
+        }
+
+        console.log('Updating product with menu_id:', menu_id);
+
+        // Check if product exists
+        const [product] = await pool.query(queries.getProductById, [menu_id]);
+        if (product.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        // Update the product
-        pool.query(queries.updateProduct, [
+        // Update product
+        await pool.query(queries.updateProduct, [
             name,
             description || null,
             category || null,
-            price || null,
+            price,
             items || null,
             img || null,
-            stocks || null,
-            menu_id // Use menu_id instead of name
-        ], (error) => {
-            if (error) {
-                console.error('Error updating product:', error);
-                return res.status(500).json({ error: 'Error updating product' });
-            }
+            stocks,
+            menu_id
+        ]);
 
-            // Respond with success message
-            return res.status(200).json({ message: 'Product updated successfully' });
-        });
-    });
+        return res.status(200).json({ message: 'Product updated successfully' });
+    } catch (error) {
+        console.error('Error:', error.message);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
 };
 
 
-const deleteProduct = (req, res) => {
-    const { menu_id } = req.params; // Get the menu_id from the URL params
 
-    pool.query(queries.getProductById, [menu_id], (error, results) => {
+
+
+
+const deleteProduct = (req, res) => {
+    const { menu_id } = req.params;
+
+    pool.execute(queries.getProductById, [menu_id], (error, results) => {
         if (error) {
             console.error('Error fetching product:', error);
             return res.status(500).json({ error: 'Error fetching product' });
         }
 
-        if (results.rows.length === 0) {
+        if (results.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        pool.query(queries.deleteProduct, [menu_id], (error) => {
+        pool.execute(queries.deleteProduct, [menu_id], (error) => {
             if (error) {
                 console.error('Error deleting product:', error);
                 return res.status(500).json({ error: 'Error deleting product' });
@@ -121,30 +139,27 @@ const deleteProduct = (req, res) => {
 };
 
 const updateProductStock = async (req, res) => {
-    const productId = parseInt(req.params.menu_id); // Get the product ID from the URL parameters
-    const { quantity } = req.body; // Get the stock from the request body
+    const productId = parseInt(req.params.menu_id);
+    const { quantity } = req.body;
 
     if (isNaN(quantity) || quantity <= 0) {
         return res.status(400).json({ error: 'Invalid quantity provided.' });
     }
 
     try {
-        // Check the current product stock
-        const currentProduct = await pool.query(queries.getStock, [productId]);
+        const [currentProduct] = await pool.execute(queries.getStock, [productId]);
 
-        if (currentProduct.rows.length === 0) {
+        if (currentProduct.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        const currentStock = currentProduct.rows[0].stocks;
+        const currentStock = currentProduct[0].stocks;
 
-        // Ensure we don't reduce below zero
         if (currentStock < quantity) {
             return res.status(400).json({ error: 'Insufficient stock' });
         }
 
-        // Update the product stock in the database
-        await pool.query(queries.updateStock, [quantity, productId]);
+        await pool.execute(queries.updateStock, [quantity, productId]);
 
         res.status(200).json({ message: 'Product stock updated successfully.' });
     } catch (error) {
@@ -153,11 +168,10 @@ const updateProductStock = async (req, res) => {
     }
 };
 
-
 const getCategories = async (req, res) => {
     try {
-        const categories = await pool.query(queries.getCategories);
-        res.json(categories.rows.map(row => row.category));
+        const [categories] = await pool.execute(queries.getCategories);
+        res.json(categories.map(row => row.category));
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -166,15 +180,14 @@ const getCategories = async (req, res) => {
 
 const getLowStocks = async (req, res) => {
     try {
-        // Execute the query to fetch low stock items
-        const result = await pool.query(queries.getLowStocks); // Make sure queries.getLowStocks is correct
-        // Return the rows from the query result
-        res.json(result.rows);
+        const [result] = await pool.execute(queries.getLowStocks);
+        res.json(result);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 };
+
 
 module.exports = {
     addProduct,

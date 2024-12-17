@@ -13,17 +13,6 @@ const addComment = (req, res) => {
     });
 };
 
-
-// const getComment = (req, res) => {
-//     pool.query(queries.getComments, (error, results) => {
-//         if (error) {
-//             console.error('Error fetching comments:', error);
-//             return res.status(500).json({ error: 'Error fetching comments' });
-//         }
-//         res.status(200).json(results.rows); // Ensure you return the rows
-//     });
-// };
-
 const getComment = async (req, res) => {
     try {
         const [rows] = await pool.execute('SELECT * FROM feedback'); // Adjust table name if needed

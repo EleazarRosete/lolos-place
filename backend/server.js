@@ -20,7 +20,6 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-
 const feedback = require('./feedback/routes');
 const menu = require('./menu/routes');
 const order = require('./order/routes');
