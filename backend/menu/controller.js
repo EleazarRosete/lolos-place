@@ -29,16 +29,16 @@ const addProduct = async (req, res) => {
 
 
 
-
-const getProduct = (req, res) => {
-    pool.query(queries.getProduct, (error, results) => {
-        if (error) {
-            console.error('Error fetching Product:', error);
-            return res.status(500).json({ error: 'Error fetching Product' });
-        }
-        res.status(200).json(results.rows);
-    });
+const getProduct = async (req, res) => {
+    try {
+        const [rows] = await pool.execute('SELECT * FROM menu_items'); // Adjust table name if needed
+        res.status(200).json(rows); // Return the rows from the query
+    } catch (error) {
+        console.error('Error fetching Product:', error);
+        return res.status(500).json({ error: 'Error fetching Product' });
+    }
 };
+
 
 const getProductById = (req, res) => {
     const menu_id = parseInt(req.params.menu_id); // Correctly parse the menu_id

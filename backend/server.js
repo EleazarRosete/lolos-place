@@ -6,8 +6,19 @@ const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
-const pool = require('./db'); 
+const pool = require('./db'); // This will now be your MySQL connection
 const admin = process.env.ADMIN_ID;
+const app = express();
+
+// Example of using pool to interact with MySQL database
+app.get('/test-db', async (req, res) => {
+  try {
+    const [rows] = await pool.execute('SELECT * FROM orders');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ message: 'Database error', error: err.message });
+  }
+});
 
 
 const feedback = require('./feedback/routes');
@@ -17,7 +28,6 @@ const payment = require('./payment/routes');
 const sales = require('./sales/routes');
 const purchases = require('./purchases/routes');
 
-const app = express();
 
 
 const port = process.env.PORT;  // Now using the PORT from .env
