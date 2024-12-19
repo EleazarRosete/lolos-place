@@ -73,7 +73,7 @@ const getProductById = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const { menu_id } = req.params;
+        const menu_id = parseInt(req.params.menu_id, 10); // Converts menu_id to an integer
         const { name, description, category, price, items, img, stocks } = req.body;
 
         if (!menu_id) {
@@ -83,7 +83,8 @@ const updateProduct = async (req, res) => {
             return res.status(400).json({ error: 'Name, price, and stocks are required fields' });
         }
 
-        console.log('Updating product with menu_id:', menu_id);
+        // Convert items to a JSON string if it's an array
+        const itemsJson = Array.isArray(items) ? JSON.stringify(items) : items;
 
         // Check if product exists
         const [product] = await pool.query(queries.getProductById, [menu_id]);
@@ -97,11 +98,12 @@ const updateProduct = async (req, res) => {
             description || null,
             category || null,
             price,
-            items || null,
+            itemsJson || null,
             img || null,
             stocks,
             menu_id
         ]);
+        console.log('Updating product with menu_id:', menu_id);
 
         return res.status(200).json({ message: 'Product updated successfully' });
     } catch (error) {
@@ -115,28 +117,28 @@ const updateProduct = async (req, res) => {
 
 
 
-const deleteProduct = (req, res) => {
+
+const deleteProduct = async (req, res) => {
     const { menu_id } = req.params;
 
-    pool.execute(queries.getProductById, [menu_id], (error, results) => {
-        if (error) {
-            console.error('Error fetching product:', error);
-            return res.status(500).json({ error: 'Error fetching product' });
-        }
+    try {
+        // Fetch product by menu_id
+        const [results] = await pool.execute(queries.getProductById, [menu_id]);
 
         if (results.length === 0) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        pool.execute(queries.deleteProduct, [menu_id], (error) => {
-            if (error) {
-                console.error('Error deleting product:', error);
-                return res.status(500).json({ error: 'Error deleting product' });
-            }
-            return res.status(200).send("Product deleted successfully");
-        });
-    });
+        // Delete the product
+        await pool.execute(queries.deleteProduct, [menu_id]);
+
+        return res.status(200).json({ message: 'Product deleted successfully' });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
 };
+
 
 const updateProductStock = async (req, res) => {
     const productId = parseInt(req.params.menu_id);

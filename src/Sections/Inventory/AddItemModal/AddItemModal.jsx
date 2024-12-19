@@ -88,7 +88,6 @@ function AddItemModal({ item, onAddItem, onUpdateItem, onClose }) {
         const filteredItems = formData.items.filter(item => item.trim() !== '');
 
         const updatedFormData = { ...formData, items: filteredItems };
-        console.log("UPDATED",updatedFormData);
         try {
             if (item) {
                 await handleUpdateItem(updatedFormData);

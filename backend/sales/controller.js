@@ -1,7 +1,7 @@
 const pool = require('../db');
 const queries = require('./queries');
 
-// Function to add a new sale
+
 const addSales = async (req, res) => {
     const {
         amount, service_charge, gross_sales, product_name, category,
@@ -9,13 +9,16 @@ const addSales = async (req, res) => {
     } = req.body;
 
     try {
-        // Using the addSales query to insert a new sale into the database
-        const addResult = await pool.query(queries.addSales, [
-            amount, service_charge, gross_sales, product_name, category,
-            quantity_sold, price_per_unit, mode_of_payment, order_type
-        ]);
+        const [addResult] = await pool.execute(
+            `INSERT INTO sales_data (date, amount, service_charge, gross_sales, product_name, category, 
+                        quantity_sold, price_per_unit, mode_of_payment, order_type) 
+            VALUES (CURDATE(), ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+            [
+                amount, service_charge, gross_sales, product_name, category,
+                quantity_sold, price_per_unit, mode_of_payment, order_type
+            ]
+        );
 
-        // Return a success message
         res.status(201).json({
             message: 'Sales added successfully',
         });
@@ -25,39 +28,39 @@ const addSales = async (req, res) => {
     }
 };
 
+
 // Get sales data
-const getSales = (req, res) => {
-    pool.query(queries.getSales, (error, results) => {
-        if (error) {
-            console.error('Error fetching Sales:', error);
-            return res.status(500).json({
-                error: 'Error fetching Sales',
-                details: error.message
-            });
-        }
+const getSales = async (req, res) => {
+    try {
+        const [results] = await pool.execute(`SELECT * FROM sales_data`);
 
-        if (!results.rows) {
-            return res.status(500).json({ error: 'Unexpected query result format' });
-        }
-
-        if (results.rows.length === 0) {
+        if (!results.length) {
             return res.status(404).json({ message: 'No sales data found' });
         }
 
-        res.status(200).json(results.rows);
-    });
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error fetching Sales:', error);
+        res.status(500).json({
+            error: 'Error fetching Sales',
+            details: error.message
+        });
+    }
 };
 
+// Get best products
+const getBestProducts = async (req, res) => {
+    try {
+        const [results] = await pool.execute(`SELECT product_name, SUM(quantity_sold) as total_sold 
+                                              FROM sales 
+                                              GROUP BY product_name 
+                                              ORDER BY total_sold DESC`);
 
-
-const getBestProducts = (req, res) => {
-    pool.query(queries.getBestProducts, (error, results) => {
-        if (error) {
-            console.error('Error fetching Sales:', error);
-            return res.status(500).json({ error: 'Error fetching Sales' });
-        }
-        res.status(200).json(results.rows);  // Return the products from the query
-    });
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error fetching best products:', error);
+        res.status(500).json({ error: 'Error fetching best products' });
+    }
 };
 
 module.exports = {

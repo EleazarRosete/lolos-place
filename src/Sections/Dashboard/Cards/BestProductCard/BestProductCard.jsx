@@ -37,13 +37,14 @@ function BestProductCard() {
         // Summarize sold items for the filtered orders
         const summary = {};
         filtered.forEach((order) => {
-            order.items.forEach((item) => {
+            // Ensure we access 'items' correctly based on your MySQL data structure
+            const orderItems = order.items || []; // Check if items exist
+            orderItems.forEach((item) => {
                 const productName = item.menu_name;
                 const quantity = item.order_quantity;
                 summary[productName] = (summary[productName] || 0) + quantity;
             });
         });
-
         setProductSummary(summary); // Update the product summary based on filtered orders
     };
 

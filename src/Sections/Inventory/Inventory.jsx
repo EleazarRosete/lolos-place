@@ -72,6 +72,7 @@ function Inventory() {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
             });
+            console.log(id);
 
             const updatedItems = product.filter(item => item.menu_id !== id);
             console.log("Removed item with ID:", id);

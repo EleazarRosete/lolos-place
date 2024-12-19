@@ -15,7 +15,6 @@ function Feedback() {
                 headers: { "Content-Type": "application/json" },
             });
             const jsonData = await response.json();
-            console.log("Fetched Comments:", jsonData);
             setComments(jsonData);
             setFilteredComments(jsonData); // Initially, show all comments
         } catch (err) {

@@ -89,14 +89,21 @@ app.post('/api/feedback', async (req, res) => {
     // Insert feedback data into the database
     const query = `
       INSERT INTO feedback (name, comment, date, compound_score, sentiment, feedback_type)
-      VALUES ($1, $2, NOW(), $3, $4, $5) RETURNING *`;
+      VALUES (?, ?, NOW(), ?, ?, ?)`;
     const values = [name, comment, compound_score, sentiment, feedbackTypeString];
 
-    const result = await pool.query(query, values);
+    const [result] = await pool.execute(query, values);
 
     res.status(201).json({
       message: 'Feedback submitted successfully!',
-      feedback: result.rows[0]
+      feedback: {
+        id: result.insertId,
+        name,
+        comment,
+        compound_score,
+        sentiment,
+        feedbackType: feedbackTypeString
+      }
     });
   } catch (err) {
     console.error('Error saving feedback:', err);
@@ -105,7 +112,86 @@ app.post('/api/feedback', async (req, res) => {
 });
 
 
+app.post('/api/create-gcash-checkout-session', async (req, res) => {
+  const { user_id, lineItems } = req.body;
 
+  const formattedLineItems = lineItems.map((product) => {
+      return {
+          currency: 'PHP',
+          amount: Math.round(product.price * 100), 
+          name: product.name,
+          quantity: product.quantity,
+      };
+  });
+
+  const randomId = generateRandomId(28);
+
+  // Define URLs based on user_id
+  const successUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/successful' : `http://localhost:5173/successpage?session_id=${randomId}`;
+  const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : 'http://localhost:5173/';
+
+  try {
+      const response = await axios.post(
+          'https://api.paymongo.com/v1/checkout_sessions',
+          {
+              data: {
+                  attributes: {
+                      send_email_receipt: false,
+                      show_line_items: true,
+                      line_items: formattedLineItems, 
+                      payment_method_types: ['gcash'],
+                      success_url: successUrl,
+                      cancel_url: cancelUrl,
+                  },
+              },
+          },
+          {
+              headers: {
+                  accept: 'application/json',
+                  'Content-Type': 'application/json',
+                  Authorization: `Basic ${Buffer.from(PAYMONGO_SECRET_KEY).toString('base64')}`, 
+              },
+          }
+      );
+
+      const checkoutUrl = response.data.data.attributes.checkout_url;
+
+      if (!checkoutUrl) {
+          return res.status(500).json({ error: 'Checkout URL not found in response' });
+      }
+
+      // MySQL Client - connection pool
+      const connection = await pool.getConnection();
+
+      try {
+          await connection.beginTransaction(); // Begin transaction
+
+          // UPSERT query for MySQL
+          const query = `
+              INSERT INTO payment (user_id, session_id, payment_status)
+              VALUES (?, ?, ?)
+              ON DUPLICATE KEY UPDATE 
+                  session_id = VALUES(session_id),
+                  payment_status = VALUES(payment_status);
+          `;
+          const values = [user_id, randomId, 'pending'];
+
+          await connection.query(query, values);
+          await connection.commit(); // Commit the transaction
+      } catch (error) {
+          await connection.rollback(); // Rollback in case of error
+          console.error('Error inserting/updating payment:', error.message);
+          return res.status(500).json({ error: 'Failed to insert/update payment', details: error.message });
+      } finally {
+          connection.release(); // Release the connection back to the pool
+      }
+
+      res.status(200).json({ url: checkoutUrl });
+  } catch (error) {
+      console.error('Error creating checkout session:', error.response ? error.response.data : error.message);
+      res.status(500).json({ error: 'Failed to create checkout session', details: error.response ? error.response.data : error.message });
+  }
+});
 
 
 
@@ -463,87 +549,6 @@ const generateRandomId = (length) => {
   return result;
 };
 
-app.post('/api/create-gcash-checkout-session', async (req, res) => {
-  const { user_id, lineItems } = req.body;
-
-  const formattedLineItems = lineItems.map((product) => {
-      return {
-          currency: 'PHP',
-          amount: Math.round(product.price * 100), 
-          name: product.name,
-          quantity: product.quantity,
-      };
-  });
-
-  const randomId = generateRandomId(28);
-
-  // Define URLs based on user_id
-  const successUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/successful' : `http://localhost:5173/successpage?session_id=${randomId}`;
-  const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : 'http://localhost:5173/';
-
-  try {
-      const response = await axios.post(
-          'https://api.paymongo.com/v1/checkout_sessions',
-          {
-              data: {
-                  attributes: {
-                      send_email_receipt: false,
-                      show_line_items: true,
-                      line_items: formattedLineItems, 
-                      payment_method_types: ['gcash'],
-                      success_url: successUrl,
-                      cancel_url: cancelUrl,
-                  },
-              },
-          },
-          {
-              headers: {
-                  accept: 'application/json',
-                  'Content-Type': 'application/json',
-                  Authorization: `Basic ${Buffer.from(PAYMONGO_SECRET_KEY).toString('base64')}`, 
-              },
-          }
-      );
-
-      const checkoutUrl = response.data.data.attributes.checkout_url;
-
-      if (!checkoutUrl) {
-          return res.status(500).json({ error: 'Checkout URL not found in response' });
-      }
-
-      const client = await pool.connect();
-
-      try {
-          await client.query('BEGIN');
-
-          // UPSERT query
-          const query = `
-              INSERT INTO payment (user_id, session_id, payment_status)
-              VALUES ($1, $2, $3)
-              ON CONFLICT (user_id) 
-              DO UPDATE SET 
-                  session_id = EXCLUDED.session_id,
-                  payment_status = EXCLUDED.payment_status;
-          `;
-          const values = [user_id, randomId, 'pending'];
-
-          await client.query(query, values);
-          await client.query('COMMIT'); // Commit the transaction
-      } catch (error) {
-          await client.query('ROLLBACK'); // Rollback in case of error
-          console.error('Error inserting/updating payment:', error.message);
-          return res.status(500).json({ error: 'Failed to insert/update payment', details: error.message });
-      } finally {
-          client.release(); // Release the connection back to the pool
-      }
-
-      res.status(200).json({ url: checkoutUrl });
-  } catch (error) {
-      console.error('Error creating checkout session:', error.response ? error.response.data : error.message);
-      res.status(500).json({ error: 'Failed to create checkout session', details: error.response ? error.response.data : error.message });
-  }
-});
-
 
 
 app.get('/api/check-payment-status/:user_id', async (req, res) => {
@@ -691,11 +696,29 @@ app.get('/api/order-history', async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get('/order/order-history', async (req, res) => {
   try {
     // Fetch all orders and users in a single query by joining users and orders
-    const result = await pool.query(
-      `
+    const [rows, fields] = await pool.query(`
       SELECT 
         o.order_id, 
         o.user_id, 
@@ -717,34 +740,44 @@ app.get('/order/order-history', async (req, res) => {
       FROM orders o
       JOIN users u ON o.user_id = u.user_id
       ORDER BY o.date DESC;
-      `
-    );
+    `);
+    // If no orders, return empty response
+    if (rows.length === 0) {
+      return res.json([]);
+    }
 
-    const orderIds = result.rows.map(order => order.order_id);
+    const orderIds = rows.map(order => order.order_id);
+    // Generate placeholders for the IN clause only if the arrays are not empty
+    const orderIdsPlaceholders = orderIds.length > 0 ? orderIds.map(() => '?').join(',') : '';
 
-    const itemsResult = await pool.query(
+    // Fetch the order items
+    const itemsResult = orderIds.length > 0 ? await pool.query(
       `
       SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
       FROM order_quantities oq
       JOIN menu_items mi ON oq.menu_id = mi.menu_id
-      WHERE oq.order_id = ANY($1);
+      WHERE oq.order_id IN (${orderIdsPlaceholders});
       `,
-      [orderIds]
-    );
+      orderIds
+    ) : [];
 
-    const reservationResult = await pool.query(
+    // Fetch the reservations if available
+    const reservationIds = rows.map(order => order.reservation_id).filter(Boolean);
+    const reservationIdsPlaceholders = reservationIds.length > 0 ? reservationIds.map(() => '?').join(',') : '';
+    const reservationResult = reservationIds.length > 0 ? await pool.query(
       `
       SELECT r.reservation_id, r.reservation_date, r.reservation_time
       FROM reservations r
-      WHERE r.reservation_id = ANY($1);
+      WHERE r.reservation_id IN (${reservationIdsPlaceholders});
       `,
-      [result.rows.map(order => order.reservation_id).filter(Boolean)]
-    );
+      reservationIds
+    ) : [];
 
-    const groupedOrders = result.rows.map(order => {
-      const orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
+    // Group orders with their respective items and reservation details
+    const groupedOrders = rows.map(order => {
+      const orderItems = itemsResult[0].filter(item => item.order_id === order.order_id);
       const reservationDetails = order.reservation_id
-        ? reservationResult.rows.find(r => r.reservation_id === order.reservation_id)
+        ? reservationResult[0].find(r => r.reservation_id === order.reservation_id)
         : null;
 
       return {
@@ -777,8 +810,6 @@ app.get('/order/order-history', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
   }
 });
-
-
 
 
 
