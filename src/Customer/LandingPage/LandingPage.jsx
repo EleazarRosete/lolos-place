@@ -11,6 +11,8 @@ const LandingPage = () => {
   const [topSellers, setTopSellers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
+
   const toggleDropdown = () => {
     setDropdownActive((prev) => !prev);
   };
@@ -28,6 +30,22 @@ const LandingPage = () => {
       window.removeEventListener('click', handleOutsideClick);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchTopSellers = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/top-best-sellers');
+        const data = await response.json();
+        setTopSellers(data.data || []); // Safely set the data or an empty array
+      } catch (error) {
+        console.error('Error fetching top sellers:', error);
+        setTopSellers([]); // Default to an empty array on error
+      }
+    };
+  
+    fetchTopSellers();
+  }, []);
+  
 
   const handleLogout = () => {
     setCustomer(null); // Clear customer context on logout
@@ -106,12 +124,16 @@ const LandingPage = () => {
     <p>Loading top sellers...</p>
   ) : (
     <div className="best-sellers">
-      {topSellers.map((product, index) => (
-        <div key={index} className="best-seller-card">
-          <h3>{product.product_name}</h3>
-        </div>
-      ))}
-    </div>
+  {topSellers && Array.isArray(topSellers) ? (
+    topSellers.map((product, index) => (
+      <div key={index} className="best-seller-card">
+        <h3>{product.product_name}</h3>
+      </div>
+    ))
+  ) : (
+    <p>No top sellers available.</p>
+  )}
+</div>
   )}
 
   <div className="custom-shape-divider-top-1732261032">

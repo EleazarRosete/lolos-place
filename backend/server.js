@@ -51,9 +51,9 @@ app.post('/save-image-url', async (req, res) => {
 
     try {
         // Insert the URL into the database
-        const query = 'INSERT INTO your_table_name(image_url) VALUES($1) RETURNING *';
+        const query = 'INSERT INTO your_table_name(image_url) VALUES(?) RETURNING *';
         const values = [url];
-        const result = await pool.query(query, values);
+        const result = await pool.execute(query, values);
         
         res.status(201).json({ message: 'Image URL saved successfully', data: result.rows[0] });
     } catch (error) {
@@ -207,11 +207,11 @@ app.post('/api/login', async (req, res) => {
 
   try {
     // Fetch the user from the users table by email or phone
-    const checkIdentifier = await pool.query(
-      'SELECT * FROM users WHERE email = $1 OR phone = $2',
+    const [rows] = await pool.execute(
+      'SELECT * FROM users WHERE email = ? OR phone = ?',
       [identifier, identifier]
     );
-    const user = checkIdentifier.rows[0];
+    const user = rows[0]; // Get the first user from the result array
 
     // Check if user exists
     if (!user) {
@@ -228,13 +228,11 @@ app.post('/api/login', async (req, res) => {
     // Concatenate first name and last name using template literals
     const fullName = `${user.first_name} ${user.last_name}`;
 
-
     // Retrieve complete address and contact number
     const address = user.address;
     const phone = user.phone;
-    const email = user.email
-    const id = user.user_id
-
+    const email = user.email;
+    const id = user.user_id;
 
     // Create the result object
     const userResult = {
@@ -258,12 +256,13 @@ app.post('/api/login', async (req, res) => {
 });
 
 
+
 app.post('/api/signup', async (req, res) => {
     const { firstName, lastName, address, email, phone, password } = req.body;
   
     try {
       // Check if user already exists
-      const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      const existingUser = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
       if (existingUser.rows.length > 0) {
         return res.status(400).json({ message: 'User already exists' });
       }
@@ -272,8 +271,8 @@ app.post('/api/signup', async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
   
       // Create a new user
-      const newUser = await pool.query(
-        'INSERT INTO users (first_name, last_name, address, email, phone, password) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      const newUser = await pool.execute(
+        'INSERT INTO users (first_name, last_name, address, email, phone, password) VALUES (?, ?, ?, ?, ?, ?) RETURNING *',
         [firstName, lastName, address, email, phone, hashedPassword]
       );
   
@@ -303,8 +302,8 @@ app.post('/api/changeCustomerPassword', async (req, res) => {
 
     try {
         // Fetch the current password hash from the database
-        const result = await pool.query(
-            'SELECT password FROM users WHERE user_id = $1',
+        const result = await pool.execute(
+            'SELECT password FROM users WHERE user_id = ?',
             [id]
         );
 
@@ -324,8 +323,8 @@ app.post('/api/changeCustomerPassword', async (req, res) => {
         const hashedNewPassword = await bcrypt.hash(newPassword, 10); // 10 is the salt rounds
 
         // Update the password in the database
-        await pool.query(
-            'UPDATE users SET password = $1 WHERE user_id = $2',
+        await pool.execute(
+            'UPDATE users SET password = ? WHERE user_id = ?',
             [hashedNewPassword, id]
         );
 
@@ -346,16 +345,16 @@ app.post('/api/changeCustomerDetails', async (req, res) => {
 
   try {
       // Fetch the current password hash from the database
-      const result = await pool.query(
-          'SELECT * FROM users WHERE user_id = $1',
+      const result = await pool.execute(
+          'SELECT * FROM users WHERE user_id = ?',
           [id]
       );
 
       if (result.rows.length === 0) {
           return res.status(404).json({ message: 'Customer not found.' });
       }else {
-        await pool.query(
-          'UPDATE users SET email = $1, phone = $2, address = $3 WHERE user_id = $4',
+        await pool.execute(
+          'UPDATE users SET email = ?, phone = ?, address = ? WHERE user_id = ?',
           [email, phone, address, id]
       );
       res.status(200).json({ message: 'Changed successfully!' });
@@ -368,15 +367,15 @@ app.post('/api/changeCustomerDetails', async (req, res) => {
 });
 
   
-  app.get('/api/menu', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM menu_items');
-      res.json(result.rows); // Send the rows as JSON
-    } catch (error) {
-      console.error('Error fetching menu items:', error);
-      res.status(500).json({ error: 'Server error' });
-    }
-  });
+app.get('/api/menu', async (req, res) => {
+  try {
+    const [rows] = await pool.execute('SELECT * FROM menu_items');
+    res.json(rows); // Send the rows as JSON
+  } catch (error) {
+    console.error('Error fetching menu items:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
   // API endpoint to save the order
 app.post('/api/web-orders', async (req, res) => {
@@ -385,11 +384,11 @@ app.post('/api/web-orders', async (req, res) => {
   try {
     const query = `
       INSERT INTO orders (name, address, contact, total_amount, order_items)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *;
+      VALUES (?, ?, ?, ?, ?) RETURNING *;
     `;
     const values = [name, address, contact, totalAmount, JSON.stringify(items)];
 
-    const result = await pool.query(query, values);
+    const result = await pool.execute(query, values);
     res.status(201).json({ success: true, order: result.rows[0] });
   } catch (err) {
     console.error('Error saving order:', err);
@@ -398,64 +397,78 @@ app.post('/api/web-orders', async (req, res) => {
 });
 
 app.post('/api/orders', async (req, res) => {
-  const client = await pool.connect(); // Get a client from the pool
+  const client = await pool.getConnection(); // Get a client from the pool
   try {
     // Start a transaction
-    await client.query('BEGIN');
+    await client.beginTransaction();
 
     // Destructure order and delivery details from request body
-    const { cart, userId, mop, totalAmount, date, time, deliveryLocation, deliveryStatus } = req.body;
-    
+    const { cart, userId, mop, totalAmount, deliveryLocation, deliveryStatus } = req.body;
+
+    // Validate input
+    if (!cart || !Array.isArray(cart) || !cart.length) {
+      return res.status(400).json({ message: 'Cart is empty or invalid' });
+    }
+    if (!userId || !mop || !totalAmount || !deliveryLocation || !deliveryStatus) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
     // Get the current date and time in the correct format
     const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const currentTime = new Date().toTimeString().split(' ')[0]; // HH:MM:SS
 
-    const paymentResult = await pool.query('UPDATE payment SET payment_status = $1 WHERE user_id = $2', ['paid', userId])
-    if (paymentResult.rowCount === 0) {
+    // Update payment status
+    const [paymentResult] = await client.execute(
+      'UPDATE payment SET payment_status = ? WHERE user_id = ?',
+      ['paid', userId]
+    );
+    if (paymentResult.affectedRows === 0) {
       return res.status(400).json({ message: 'No payment found for the customer' });
     }
+    console.log('Payment Update Result:', paymentResult);
 
     // Insert order into orders table
     const orderQuery = `
       INSERT INTO orders (user_id, mop, total_amount, date, time, delivery)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING order_id;
+      VALUES (?, ?, ?, ?, ?, ?);
     `;
     const orderValues = [userId, mop, totalAmount, currentDate, currentTime, true]; // Assuming 'delivery' is true
-    const orderResult = await client.query(orderQuery, orderValues);
+    const [orderResult] = await client.execute(orderQuery, orderValues);
+    console.log('Order Insert Result:', orderResult);
 
-    // Retrieve the generated order_id
-    const orderId = orderResult.rows[0].order_id;
+    // Retrieve the generated order_id (MySQL equivalent of LAST_INSERT_ID())
+    const orderId = orderResult.insertId;
 
     // Insert order quantities into order_quantities table (from cart)
-    for (let item of cart) {
-      await client.query(
-        'INSERT INTO order_quantities (order_id, menu_id, order_quantity) VALUES ($1, $2, $3)',
-        [orderId, item.menu_id, item.quantity]
-      );
-    }
+    const values = cart.map((item) => [orderId, item.menu_id, item.quantity]);
+    const orderQuantitiesQuery = `
+      INSERT INTO order_quantities (order_id, menu_id, order_quantity)
+      VALUES ?;
+    `;
+    await client.query(orderQuantitiesQuery, [values]);
+    console.log('Order Quantities Insert Result:', values);
 
     // Insert delivery details into deliveries table
     const deliveryQuery = `
       INSERT INTO deliveries (order_id, delivery_location, delivery_status)
-      VALUES ($1, $2, $3)
-      RETURNING *;
+      VALUES (?, ?, ?);
     `;
     const deliveryValues = [orderId, deliveryLocation, deliveryStatus];
-    const deliveryResult = await client.query(deliveryQuery, deliveryValues);
+    const [deliveryResult] = await client.execute(deliveryQuery, deliveryValues);
+    console.log('Delivery Insert Result:', deliveryResult);
 
     // Commit the transaction
-    await client.query('COMMIT');
+    await client.commit();
 
     // Return the new order and delivery details
     res.status(201).json({
-      order: orderResult.rows[0],
-      delivery: deliveryResult.rows[0]
+      order: orderResult,
+      delivery: deliveryResult,
     });
   } catch (err) {
     // Rollback transaction on error
-    await client.query('ROLLBACK');
-    console.error(err.message);
+    await client.rollback();
+    console.error('SQL Error:', err.sqlMessage || err.message);
     res.status(500).send('Server Error');
   } finally {
     // Release the client back to the pool
@@ -464,53 +477,53 @@ app.post('/api/orders', async (req, res) => {
 });
 
 
-
 app.post('/api/reservations', async (req, res) => {
-  const client = await pool.connect();
+  const client = await pool.getConnection();  // Get connection from pool
+
   try {
-    await client.query('BEGIN');
+    await client.beginTransaction(); // Start the transaction
 
     // Destructure reservation details from request body
     const { guestNumber, userId, reservationDate, reservationTime, advanceOrder, totalAmount, cart } = req.body;
     console.log(req.body);
-    const paymentResult = await pool.query('UPDATE payment SET payment_status = $1 WHERE user_id = $2', ['paid', userId])
-    if (paymentResult.rowCount === 0) {
+
+    // Update the payment status
+    const [paymentResult] = await client.execute('UPDATE payment SET payment_status = ? WHERE user_id = ?', ['paid', userId]);
+
+    if (paymentResult.affectedRows === 0) {
       return res.status(400).json({ message: 'No payment found for the customer' });
-  }
+    }
 
     // Insert reservation into reservations table
     const reservationQuery = `
       INSERT INTO reservations (user_id, guest_number, reservation_date, reservation_time, advance_order)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING reservation_id;
+      VALUES (?, ?, ?, ?, ?);
     `;
-    const reservationValues = [userId, guestNumber, reservationDate, reservationTime, advanceOrder];
-    const reservationResult = await client.query(reservationQuery, reservationValues);
-    const reservationId = reservationResult.rows[0].reservation_id;
+    const [reservationResult] = await client.execute(reservationQuery, [userId, guestNumber, reservationDate, reservationTime, advanceOrder]);
+    const reservationId = reservationResult.insertId; // Get the ID of the newly inserted reservation
 
     // Insert order associated with the reservation
+    const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const currentTime = new Date().toTimeString().split(' ')[0]; // Format: HH:MM:SS
+
     const orderQuery = `
       INSERT INTO orders (user_id, mop, total_amount, date, time, delivery, reservation_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING order_id;
+      VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
-    const currentDate = new Date().toISOString().split('T')[0];
-    const currentTime = new Date().toTimeString().split(' ')[0];
-    const orderValues = [userId, 'GCash', totalAmount, currentDate, currentTime, false, reservationId];
-    const orderResult = await client.query(orderQuery, orderValues);
-    const orderId = orderResult.rows[0].order_id;
+    const [orderResult] = await client.execute(orderQuery, [userId, 'GCash', totalAmount, currentDate, currentTime, false, reservationId]);
+    const orderId = orderResult.insertId; // Get the ID of the newly inserted order
 
     // Insert each item from the cart into order_quantities table
-    for (let item of cart) {
-      const orderQuantityQuery = `
-        INSERT INTO order_quantities (order_id, menu_id, order_quantity)
-        VALUES ($1, $2, $3);
-      `;
-      await client.query(orderQuantityQuery, [orderId, item.menu_id, item.quantity]);
-    }
+    const values = cart.map(item => [orderId, item.menu_id, item.quantity]);
+
+    const orderQuantitiesQuery = `
+      INSERT INTO order_quantities (order_id, menu_id, order_quantity)
+      VALUES ?;
+    `;
+    await client.query(orderQuantitiesQuery, [values]);
 
     // Commit the transaction
-    await client.query('COMMIT');
+    await client.commit();
 
     // Return reservation and order details
     res.status(201).json({
@@ -531,11 +544,12 @@ app.post('/api/reservations', async (req, res) => {
       },
     });
   } catch (err) {
-    await client.query('ROLLBACK');
+    // Rollback transaction in case of error
+    await client.rollback();
     console.error(err.message);
     res.status(500).send('Server Error');
   } finally {
-    client.release();
+    client.release(); // Release the connection back to the pool
   }
 });
 
@@ -555,28 +569,30 @@ app.get('/api/check-payment-status/:user_id', async (req, res) => {
   const { user_id } = req.params;
 
   try {
-      const client = await pool.connect();
-      const query = 'SELECT session_id, payment_status FROM payment WHERE user_id = $1';
-      const result = await client.query(query, [user_id]);
+    const client = await pool.getConnection(); // Get connection from pool
+    const query = 'SELECT session_id, payment_status FROM payment WHERE user_id = ?';
+    
+    const [rows] = await client.execute(query, [user_id]);
 
-      if (result.rows.length > 0) {
-          const { session_id, payment_status } = result.rows[0];
-          res.status(200).json({ session_id, payment_status });
-      } else {
-          res.status(200).json({ exists: false });
-      }
+    if (rows.length > 0) {
+      const { session_id, payment_status } = rows[0]; // Destructure the result
+      res.status(200).json({ session_id, payment_status });
+    } else {
+      res.status(200).json({ exists: false });
+    }
 
-      client.release();
+    client.release(); // Release the connection back to the pool
   } catch (error) {
-      console.error('Error checking payment status:', error.message);
-      res.status(500).json({ error: 'Internal server error' });
+    console.error('Error checking payment status:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 app.get('/api/top-best-sellers', async (req, res) => {
   try {
     // Query to fetch the top 3 best-selling products
-    const result = await pool.query(
+    const [rows] = await pool.execute(
       `
       SELECT 
         product_name,
@@ -592,7 +608,7 @@ app.get('/api/top-best-sellers', async (req, res) => {
     // Send the result as JSON
     res.status(200).json({
       message: 'Top 3 best-selling products retrieved successfully',
-      data: result.rows,
+      data: rows,
     });
   } catch (error) {
     console.error('Error fetching best-sellers:', error.message);
@@ -602,215 +618,83 @@ app.get('/api/top-best-sellers', async (req, res) => {
 
 
 app.get('/api/order-history', async (req, res) => {
-  const { user_id } = req.query;
+  const { user_id } = req.query; // Ensure you are using `user_id` from query params
 
   if (!user_id) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
   try {
-    // Fetch order and user data in a single query by joining users and orders
+    // Query to fetch orders, including date and time from the orders table
     const result = await pool.query(
       `
-      SELECT 
-        o.order_id, 
-        o.user_id, 
-        o.mop, 
-        o.total_amount, 
-        o.order_type, 
-        o.date, 
-        o.time, 
-        o.delivery, 
-        o.reservation_id, 
-        o.status, 
-        o.customer_name, 
-        o.number_of_people,
-        u.first_name, 
-        u.last_name, 
-        u.email, 
-        u.phone, 
-        u.address
+      SELECT o.order_id, o.user_id, o.mop, o.total_amount, o.date, o.time, o.delivery, o.reservation_id
       FROM orders o
-      JOIN users u ON o.user_id = u.user_id
-      WHERE o.user_id = $1
+      WHERE o.user_id = ?
       ORDER BY o.date DESC;
       `,
       [user_id]
     );
 
-    const orderIds = result.rows.map(order => order.order_id);
-
-    const itemsResult = await pool.query(
-      `
+    // Fetch the items for each order from the order_quantities table
+    const orderIds = result.map(order => order.order_id);
+    const itemsQuery = `
       SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
       FROM order_quantities oq
       JOIN menu_items mi ON oq.menu_id = mi.menu_id
-      WHERE oq.order_id = ANY($1);
-      `,
-      [orderIds]
-    );
+      WHERE oq.order_id IN (${orderIds.map(() => '?').join(',')});
+    `;
+    const itemsResult = await pool.query(itemsQuery, orderIds);
 
-    const reservationResult = await pool.query(
+    // Fetch reservation details for orders that have a reservation_id
+    const reservationIds = result.filter(order => order.reservation_id).map(order => order.reservation_id);
+    const reservationsQuery = reservationIds.length
+      ? `
+        SELECT r.reservation_id, r.reservation_date, r.reservation_time
+        FROM reservations r
+        WHERE r.reservation_id IN (${reservationIds.map(() => '?').join(',')});
       `
-      SELECT r.reservation_id, r.reservation_date, r.reservation_time
-      FROM reservations r
-      WHERE r.reservation_id = ANY($1);
-      `,
-      [result.rows.map(order => order.reservation_id).filter(Boolean)]
-    );
+      : null;
+    const reservationResult = reservationsQuery ? await pool.query(reservationsQuery, reservationIds) : [];
 
-    const groupedOrders = result.rows.map(order => {
-      const orderItems = itemsResult.rows.filter(item => item.order_id === order.order_id);
+    // Group the order items and combine with the orders
+    const groupedOrders = result.reduce((acc, order) => {
+      const existingOrder = acc.find(o => o.order_id === order.order_id);
+      const orderItems = itemsResult.filter(item => item.order_id === order.order_id);
+
+      // Get reservation details if the order is a reservation (not delivery)
       const reservationDetails = order.reservation_id
-        ? reservationResult.rows.find(r => r.reservation_id === order.reservation_id)
+        ? reservationResult.find(r => r.reservation_id === order.reservation_id)
         : null;
 
-      return {
-        order_id: order.order_id,
-        user_id: order.user_id,
-        date: order.date,
-        time: order.time,
-        total_amount: parseFloat(order.total_amount),
-        mop: order.mop,
-        delivery: order.delivery,
-        orderType: order.order_type,
-        reservation_id: order.reservation_id,
-        status: order.status,
-        customerName: order.customer_name,
-        numberOfPeople: order.number_of_people,
-        firstName: order.first_name,
-        lastName: order.last_name,
-        email: order.email,
-        phone: order.phone,
-        address: order.address,
-        reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
-        reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
-        items: orderItems,
-      };
-    });
+      if (existingOrder) {
+        existingOrder.items.push(...orderItems); // Add items for the existing order
+      } else {
+        acc.push({
+          order_id: order.order_id,
+          date: order.date,  // Order date from the orders table
+          time: order.time,  // Order time from the orders table
+          total_amount: parseFloat(order.total_amount), // Ensure it's treated as a number
+          mop: order.mop,
+          delivery: order.delivery,
+          reservation_id: order.reservation_id,
+          reservation_date: reservationDetails ? reservationDetails.reservation_date : null, // Reservation date (if applicable)
+          reservation_time: reservationDetails ? reservationDetails.reservation_time : null, // Reservation time (if applicable)
+          items: orderItems, // Add the items for the new order
+        });
+      }
+      return acc;
+    }, []);
 
-    res.json(groupedOrders);
+    // Log the groupedOrders in a readable format
+    console.log(JSON.stringify(groupedOrders, null, 2)); // Now it will log properly
+
+    res.json(groupedOrders); // Send the response as a JSON object
   } catch (error) {
     console.error("Error fetching order history:", error.message);
     res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.get('/order/order-history', async (req, res) => {
-  try {
-    // Fetch all orders and users in a single query by joining users and orders
-    const [rows, fields] = await pool.query(`
-      SELECT 
-        o.order_id, 
-        o.user_id, 
-        o.mop, 
-        o.total_amount, 
-        o.order_type, 
-        o.date, 
-        o.time, 
-        o.delivery, 
-        o.reservation_id, 
-        o.status, 
-        o.customer_name, 
-        o.number_of_people,
-        u.first_name, 
-        u.last_name, 
-        u.email, 
-        u.phone, 
-        u.address
-      FROM orders o
-      JOIN users u ON o.user_id = u.user_id
-      ORDER BY o.date DESC;
-    `);
-    // If no orders, return empty response
-    if (rows.length === 0) {
-      return res.json([]);
-    }
-
-    const orderIds = rows.map(order => order.order_id);
-    // Generate placeholders for the IN clause only if the arrays are not empty
-    const orderIdsPlaceholders = orderIds.length > 0 ? orderIds.map(() => '?').join(',') : '';
-
-    // Fetch the order items
-    const itemsResult = orderIds.length > 0 ? await pool.query(
-      `
-      SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
-      FROM order_quantities oq
-      JOIN menu_items mi ON oq.menu_id = mi.menu_id
-      WHERE oq.order_id IN (${orderIdsPlaceholders});
-      `,
-      orderIds
-    ) : [];
-
-    // Fetch the reservations if available
-    const reservationIds = rows.map(order => order.reservation_id).filter(Boolean);
-    const reservationIdsPlaceholders = reservationIds.length > 0 ? reservationIds.map(() => '?').join(',') : '';
-    const reservationResult = reservationIds.length > 0 ? await pool.query(
-      `
-      SELECT r.reservation_id, r.reservation_date, r.reservation_time
-      FROM reservations r
-      WHERE r.reservation_id IN (${reservationIdsPlaceholders});
-      `,
-      reservationIds
-    ) : [];
-
-    // Group orders with their respective items and reservation details
-    const groupedOrders = rows.map(order => {
-      const orderItems = itemsResult[0].filter(item => item.order_id === order.order_id);
-      const reservationDetails = order.reservation_id
-        ? reservationResult[0].find(r => r.reservation_id === order.reservation_id)
-        : null;
-
-      return {
-        order_id: order.order_id,
-        user_id: order.user_id,
-        date: order.date,
-        time: order.time,
-        total_amount: parseFloat(order.total_amount),
-        mop: order.mop,
-        delivery: order.delivery,
-        orderType: order.order_type,
-        reservation_id: order.reservation_id,
-        status: order.status,
-        customerName: order.customer_name,
-        numberOfPeople: order.number_of_people,
-        firstName: order.first_name,
-        lastName: order.last_name,
-        email: order.email,
-        phone: order.phone,
-        address: order.address,
-        reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
-        reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
-        items: orderItems,
-      };
-    });
-
-    res.json(groupedOrders);
-  } catch (error) {
-    console.error("Error fetching order history:", error.message);
-    res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
-  }
-});
-
 
 
 app.listen(port, () => console.log(`App listening on port ${port}`));
