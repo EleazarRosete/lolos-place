@@ -178,18 +178,25 @@ const Reservation = () => {
 
 
     try {
-        const response = await axios.post('http://localhost:5000/api/reservations', orderDetails);
-
-        if (response.status === 201) {
-            setConfirmationPopupVisible(false);
-            setFormData(initialFormData);
-            setIsAdvanceOrder(false);
-        } else {
-            console.error('Failed to save reservation and order');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
+      const response = await axios.post('http://localhost:5000/api/reservations', orderDetails);
+  
+      if (response.status === 201) {
+          setConfirmationPopupVisible(false);
+          setFormData(initialFormData);
+          setIsAdvanceOrder(false);
+      } else {
+          console.error('Failed to save reservation and order');
+      }
+  } catch (error) {
+      if (error.response) {
+          console.error('Server responded with:', error.response.data);
+      } else if (error.request) {
+          console.error('No response received:', error.request);
+      } else {
+          console.error('Axios error:', error.message);
+      }
+  }
+  
 };
 
 

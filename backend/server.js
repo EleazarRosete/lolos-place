@@ -90,14 +90,17 @@ app.post('/api/feedback', async (req, res) => {
     const query = `
       INSERT INTO feedback (name, comment, date, compound_score, sentiment, feedback_type)
       VALUES (?, ?, NOW(), ?, ?, ?)`;
+    
     const values = [name, comment, compound_score, sentiment, feedbackTypeString];
 
+    // Execute the query using MySQL pool
     const [result] = await pool.execute(query, values);
 
+    // Send a response with the feedback data (including the auto-incremented id)
     res.status(201).json({
       message: 'Feedback submitted successfully!',
       feedback: {
-        id: result.insertId,
+        id: result.insertId,  // insertId will give the auto-incremented ID
         name,
         comment,
         compound_score,
@@ -110,6 +113,7 @@ app.post('/api/feedback', async (req, res) => {
     res.status(500).json({ message: 'Server error while submitting feedback', error: err.message });
   }
 });
+
 
 
 app.post('/api/create-gcash-checkout-session', async (req, res) => {
@@ -258,81 +262,80 @@ app.post('/api/login', async (req, res) => {
 
 
 app.post('/api/signup', async (req, res) => {
-    const { firstName, lastName, address, email, phone, password } = req.body;
-  
-    try {
-      // Check if user already exists
-      const existingUser = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
-      if (existingUser.rows.length > 0) {
-        return res.status(400).json({ message: 'User already exists' });
-      }
-  
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      // Create a new user
-      const newUser = await pool.execute(
-        'INSERT INTO users (first_name, last_name, address, email, phone, password) VALUES (?, ?, ?, ?, ?, ?) RETURNING *',
-        [firstName, lastName, address, email, phone, hashedPassword]
-      );
-  
-      const user = newUser.rows[0];
-  
-      // Respond with the new user details (omit password)
-      res.status(201).json({
-        user: { id: user.user_id, firstName: user.first_name, lastName: user.last_name, email: user.email },
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal server error' });
+  const { firstName, lastName, address, email, phone, password } = req.body;
+
+  try {
+    // Check if user already exists
+    const [existingUser] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
+    if (existingUser.length > 0) {
+      return res.status(400).json({ message: 'User already exists' });
     }
-  });
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const [newUser] = await pool.execute(
+      'INSERT INTO users (first_name, last_name, address, email, phone, password) VALUES (?, ?, ?, ?, ?, ?)',
+      [firstName, lastName, address, email, phone, hashedPassword]
+    );
+
+    // Respond with the new user details (omit password)
+    res.status(201).json({
+      user: { id: newUser.insertId, firstName, lastName, email },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 app.post('/api/changeCustomerPassword', async (req, res) => {
-    const { id, oldPassword, newPassword, confirmNewPassword } = req.body;
+  const { id, oldPassword, newPassword, confirmNewPassword } = req.body;
 
-    // Validate input
-    if (!id || !oldPassword || !newPassword || !confirmNewPassword) {
-        return res.status(400).json({ message: 'All fields are required.' });
+  // Validate input
+  if (!id || !oldPassword || !newPassword || !confirmNewPassword) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ message: 'New and confirm password do not match.' });
+  }
+
+  try {
+    // Fetch the current password hash from the database
+    const [result] = await pool.execute(
+      'SELECT password FROM users WHERE user_id = ?',
+      [id]
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Customer not found.' });
     }
 
-    if (newPassword !== confirmNewPassword) {
-        return res.status(400).json({ message: 'New and confirm password do not match.' });
+    const user = result[0]; // Access the first row of the result set
+
+    // Compare old password with the stored hash
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Old password is incorrect.' });
     }
 
-    try {
-        // Fetch the current password hash from the database
-        const result = await pool.execute(
-            'SELECT password FROM users WHERE user_id = ?',
-            [id]
-        );
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10); // 10 is the salt rounds
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Customer not found.' });
-        }
+    // Update the password in the database
+    await pool.execute(
+      'UPDATE users SET password = ? WHERE user_id = ?',
+      [hashedNewPassword, id]
+    );
 
-        const user = result.rows[0];
-
-        // Compare old password with the stored hash
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Old password is incorrect.' });
-        }
-
-        // Hash the new password
-        const hashedNewPassword = await bcrypt.hash(newPassword, 10); // 10 is the salt rounds
-
-        // Update the password in the database
-        await pool.execute(
-            'UPDATE users SET password = ? WHERE user_id = ?',
-            [hashedNewPassword, id]
-        );
-
-        res.status(200).json({ message: 'Password changed successfully!' });
-    } catch (error) {
-        console.error('Error changing password:', error);
-        res.status(500).json({ message: 'Error changing password', error: error.message });
-    }
+    res.status(200).json({ message: 'Password changed successfully!' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Error changing password', error: error.message });
+  }
 });
 
 app.post('/api/changeCustomerDetails', async (req, res) => {
@@ -340,31 +343,32 @@ app.post('/api/changeCustomerDetails', async (req, res) => {
 
   // Validate input
   if (!id || !email || !phone || !address) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    return res.status(400).json({ message: 'All fields are required.' });
   }
 
   try {
-      // Fetch the current password hash from the database
-      const result = await pool.execute(
-          'SELECT * FROM users WHERE user_id = ?',
-          [id]
-      );
+    // Fetch the current details from the database
+    const [result] = await pool.execute(
+      'SELECT * FROM users WHERE user_id = ?',
+      [id]
+    );
 
-      if (result.rows.length === 0) {
-          return res.status(404).json({ message: 'Customer not found.' });
-      }else {
-        await pool.execute(
-          'UPDATE users SET email = ?, phone = ?, address = ? WHERE user_id = ?',
-          [email, phone, address, id]
+    if (result.length === 0) {
+      return res.status(404).json({ message: 'Customer not found.' });
+    } else {
+      // Update the details in the database
+      await pool.execute(
+        'UPDATE users SET email = ?, phone = ?, address = ? WHERE user_id = ?',
+        [email, phone, address, id]
       );
       res.status(200).json({ message: 'Changed successfully!' });
-      }
-
+    }
   } catch (error) {
-      console.error('Error changing details:', error);
-      res.status(500).json({ message: 'Error changing details', error: error.message });
+    console.error('Error changing details:', error);
+    res.status(500).json({ message: 'Error changing details', error: error.message });
   }
 });
+
 
   
 app.get('/api/menu', async (req, res) => {
@@ -478,7 +482,7 @@ app.post('/api/orders', async (req, res) => {
 
 
 app.post('/api/reservations', async (req, res) => {
-  const client = await pool.getConnection();  // Get connection from pool
+  const client = await pool.getConnection(); // Get a connection from the pool
 
   try {
     await client.beginTransaction(); // Start the transaction
@@ -488,9 +492,12 @@ app.post('/api/reservations', async (req, res) => {
     console.log(req.body);
 
     // Update the payment status
-    const [paymentResult] = await client.execute('UPDATE payment SET payment_status = ? WHERE user_id = ?', ['paid', userId]);
+    const paymentResult = await client.execute(
+      'UPDATE payment SET payment_status = ? WHERE user_id = ?',
+      ['paid', userId]
+    );
 
-    if (paymentResult.affectedRows === 0) {
+    if (paymentResult[0].affectedRows === 0) {
       return res.status(400).json({ message: 'No payment found for the customer' });
     }
 
@@ -499,28 +506,30 @@ app.post('/api/reservations', async (req, res) => {
       INSERT INTO reservations (user_id, guest_number, reservation_date, reservation_time, advance_order)
       VALUES (?, ?, ?, ?, ?);
     `;
-    const [reservationResult] = await client.execute(reservationQuery, [userId, guestNumber, reservationDate, reservationTime, advanceOrder]);
-    const reservationId = reservationResult.insertId; // Get the ID of the newly inserted reservation
+    const reservationValues = [userId, guestNumber, reservationDate, reservationTime, advanceOrder];
+    const [reservationResult] = await client.execute(reservationQuery, reservationValues);
+    const reservationId = reservationResult.insertId; // Get the inserted ID
 
     // Insert order associated with the reservation
-    const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    const currentTime = new Date().toTimeString().split(' ')[0]; // Format: HH:MM:SS
-
     const orderQuery = `
       INSERT INTO orders (user_id, mop, total_amount, date, time, delivery, reservation_id)
       VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
-    const [orderResult] = await client.execute(orderQuery, [userId, 'GCash', totalAmount, currentDate, currentTime, false, reservationId]);
-    const orderId = orderResult.insertId; // Get the ID of the newly inserted order
+    const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const currentTime = new Date().toTimeString().split(' ')[0]; // Format: HH:MM:SS
+    const orderValues = [userId, 'GCash', totalAmount, currentDate, currentTime, false, reservationId];
+    const [orderResult] = await client.execute(orderQuery, orderValues);
+    const orderId = orderResult.insertId; // Get the inserted ID
 
     // Insert each item from the cart into order_quantities table
-    const values = cart.map(item => [orderId, item.menu_id, item.quantity]);
-
     const orderQuantitiesQuery = `
       INSERT INTO order_quantities (order_id, menu_id, order_quantity)
-      VALUES ?;
+      VALUES (?, ?, ?);
     `;
-    await client.query(orderQuantitiesQuery, [values]);
+
+    for (let item of cart) {
+      await client.execute(orderQuantitiesQuery, [orderId, item.menu_id, item.quantity]);
+    }
 
     // Commit the transaction
     await client.commit();
@@ -544,14 +553,15 @@ app.post('/api/reservations', async (req, res) => {
       },
     });
   } catch (err) {
-    // Rollback transaction in case of error
+    // Rollback the transaction on error
     await client.rollback();
-    console.error(err.message);
+    console.error('Transaction Error:', err.message);
     res.status(500).send('Server Error');
   } finally {
     client.release(); // Release the connection back to the pool
   }
 });
+
 
 const generateRandomId = (length) => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -618,83 +628,87 @@ app.get('/api/top-best-sellers', async (req, res) => {
 
 
 app.get('/api/order-history', async (req, res) => {
-  const { user_id } = req.query; // Ensure you are using `user_id` from query params
+  const { user_id } = req.query;
 
   if (!user_id) {
     return res.status(400).json({ error: 'User ID is required.' });
   }
 
   try {
-    // Query to fetch orders, including date and time from the orders table
-    const result = await pool.query(
-      `
+    // Query to fetch orders
+    const ordersQuery = `
       SELECT o.order_id, o.user_id, o.mop, o.total_amount, o.date, o.time, o.delivery, o.reservation_id
       FROM orders o
       WHERE o.user_id = ?
       ORDER BY o.date DESC;
-      `,
-      [user_id]
-    );
+    `;
+    const orders = await pool.query(ordersQuery, [user_id]);
 
-    // Fetch the items for each order from the order_quantities table
-    const orderIds = result.map(order => order.order_id);
+    if (!orders.length) {
+      return res.status(200).json([]); // Return an empty array if no orders are found
+    }
+
+    // Extract order IDs
+    const orderIds = orders.map((order) => order.order_id);
+
+    // Query to fetch items for the orders
     const itemsQuery = `
-      SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
+      SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name AS menu_name
       FROM order_quantities oq
       JOIN menu_items mi ON oq.menu_id = mi.menu_id
       WHERE oq.order_id IN (${orderIds.map(() => '?').join(',')});
     `;
-    const itemsResult = await pool.query(itemsQuery, orderIds);
+    const items = await pool.query(itemsQuery, orderIds);
 
-    // Fetch reservation details for orders that have a reservation_id
-    const reservationIds = result.filter(order => order.reservation_id).map(order => order.reservation_id);
-    const reservationsQuery = reservationIds.length
-      ? `
-        SELECT r.reservation_id, r.reservation_date, r.reservation_time
-        FROM reservations r
-        WHERE r.reservation_id IN (${reservationIds.map(() => '?').join(',')});
-      `
-      : null;
-    const reservationResult = reservationsQuery ? await pool.query(reservationsQuery, reservationIds) : [];
+    // Extract reservation IDs
+    const reservationIds = orders
+      .filter((order) => order.reservation_id)
+      .map((order) => order.reservation_id);
 
-    // Group the order items and combine with the orders
-    const groupedOrders = result.reduce((acc, order) => {
-      const existingOrder = acc.find(o => o.order_id === order.order_id);
-      const orderItems = itemsResult.filter(item => item.order_id === order.order_id);
+    // Query to fetch reservation details
+    const reservations = reservationIds.length
+      ? await pool.query(
+          `
+          SELECT r.reservation_id, r.reservation_date, r.reservation_time
+          FROM reservations r
+          WHERE r.reservation_id IN (${reservationIds.map(() => '?').join(',')});
+          `,
+          reservationIds
+        )
+      : [];
 
-      // Get reservation details if the order is a reservation (not delivery)
-      const reservationDetails = order.reservation_id
-        ? reservationResult.find(r => r.reservation_id === order.reservation_id)
-        : null;
+    // Combine orders, items, and reservations
+    const combinedData = orders.map((order) => {
+      const orderItems = items.filter((item) => item.order_id === order.order_id);
+      const reservation = reservations.find(
+        (res) => res.reservation_id === order.reservation_id
+      );
 
-      if (existingOrder) {
-        existingOrder.items.push(...orderItems); // Add items for the existing order
-      } else {
-        acc.push({
-          order_id: order.order_id,
-          date: order.date,  // Order date from the orders table
-          time: order.time,  // Order time from the orders table
-          total_amount: parseFloat(order.total_amount), // Ensure it's treated as a number
-          mop: order.mop,
-          delivery: order.delivery,
-          reservation_id: order.reservation_id,
-          reservation_date: reservationDetails ? reservationDetails.reservation_date : null, // Reservation date (if applicable)
-          reservation_time: reservationDetails ? reservationDetails.reservation_time : null, // Reservation time (if applicable)
-          items: orderItems, // Add the items for the new order
-        });
-      }
-      return acc;
-    }, []);
+      return {
+        order_id: order.order_id,
+        date: order.date,
+        time: order.time,
+        total_amount: parseFloat(order.total_amount),
+        mop: order.mop,
+        delivery: order.delivery,
+        reservation_id: order.reservation_id,
+        reservation_date: reservation?.reservation_date || null,
+        reservation_time: reservation?.reservation_time || null,
+        items: orderItems.map((item) => ({
+          menu_id: item.menu_id,
+          menu_name: item.menu_name,
+          order_quantity: item.order_quantity,
+        })),
+      };
+    });
 
-    // Log the groupedOrders in a readable format
-    console.log(JSON.stringify(groupedOrders, null, 2)); // Now it will log properly
-
-    res.json(groupedOrders); // Send the response as a JSON object
+    res.status(200).json(combinedData);
   } catch (error) {
-    console.error("Error fetching order history:", error.message);
+    console.error('Error fetching order history:', error);
     res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
   }
 });
+
 
 
 app.listen(port, () => console.log(`App listening on port ${port}`));

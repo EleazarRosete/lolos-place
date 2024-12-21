@@ -175,9 +175,6 @@ const Delivery = () => {
   };
 
   const handleConfirmOrder = async () => {
-    
-      
-  
     try {
       const response = await axios.post('http://localhost:5000/api/orders', orderDetails);
   
