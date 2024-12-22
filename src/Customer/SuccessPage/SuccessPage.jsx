@@ -70,7 +70,11 @@ const SuccessPage = () => {
       deliveryLocation: customer.address,
       deliveryStatus: 'Pending',
     };
+<<<<<<< HEAD
   
+=======
+    console.log(orderDetails);
+>>>>>>> 443d98e (Your commit message)
     try {
       const response = await axios.post('http://localhost:5000/api/orders', orderDetails);
   
@@ -258,7 +262,16 @@ const SuccessPage = () => {
       const user_id = customer.id;
       try {
         const response = await axios.get(`http://localhost:5000/api/check-payment-status/${user_id}`);
+<<<<<<< HEAD
         if (sessionId === response.data.session_id && response.data.payment_status === 'pending') {
+=======
+        console.log(response.data.session_id);
+        console.log("BUILT IN", sessionId);
+
+        if (sessionId === response.data.session_id && response.data.payment_status === 'pending') {
+          console.log(user_id);
+
+>>>>>>> 443d98e (Your commit message)
           if (isAdvanceOrder) {
             handleReservation();
           } else {

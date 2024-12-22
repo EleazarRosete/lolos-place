@@ -132,7 +132,11 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
 
   // Define URLs based on user_id
   const successUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/successful' : `http://localhost:5173/successpage?session_id=${randomId}`;
+<<<<<<< HEAD
   const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : 'http://localhost:5173/';
+=======
+  const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : `http://localhost:5173/successpage?session_id=${randomId}`;
+>>>>>>> 443d98e (Your commit message)
 
   try {
       const response = await axios.post(
@@ -172,11 +176,20 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
 
           // UPSERT query for MySQL
           const query = `
+<<<<<<< HEAD
               INSERT INTO payment (user_id, session_id, payment_status)
               VALUES (?, ?, ?)
               ON DUPLICATE KEY UPDATE 
                   session_id = VALUES(session_id),
                   payment_status = VALUES(payment_status);
+=======
+            INSERT INTO payment (user_id, session_id, payment_status)
+VALUES (?, ?, ?)
+ON DUPLICATE KEY UPDATE 
+    session_id = VALUES(session_id),
+    payment_status = VALUES(payment_status);
+
+>>>>>>> 443d98e (Your commit message)
           `;
           const values = [user_id, randomId, 'pending'];
 
@@ -400,6 +413,10 @@ app.post('/api/web-orders', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 443d98e (Your commit message)
 app.post('/api/orders', async (req, res) => {
   const client = await pool.getConnection(); // Get a client from the pool
   try {
