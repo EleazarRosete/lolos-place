@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Import necessary components from react-router-dom
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
 import './App.css';
 import Menu from './Customer/Menu/Menu';
 import LandingPage from './Customer/LandingPage/LandingPage';
