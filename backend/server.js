@@ -72,6 +72,101 @@ app.use('/payment',payment);
 app.use('/sales',sales);
 app.use('/purchases',purchases);
 
+app.get('/order/order-history', async (req, res) => {
+  try {
+    // Fetch all orders and users in a single query by joining users and orders
+    const [rows, fields] = await pool.query(`
+      SELECT 
+        o.order_id, 
+        o.user_id, 
+        o.mop, 
+        o.total_amount, 
+        o.order_type, 
+        o.date, 
+        o.time, 
+        o.delivery, 
+        o.reservation_id, 
+        o.status, 
+        o.customer_name, 
+        o.number_of_people,
+        u.first_name, 
+        u.last_name, 
+        u.email, 
+        u.phone, 
+        u.address
+      FROM orders o
+      JOIN users u ON o.user_id = u.user_id
+      ORDER BY o.date DESC;
+    `);
+    // If no orders, return empty response
+    if (rows.length === 0) {
+      return res.json([]);
+    }
+
+    const orderIds = rows.map(order => order.order_id);
+    // Generate placeholders for the IN clause only if the arrays are not empty
+    const orderIdsPlaceholders = orderIds.length > 0 ? orderIds.map(() => '?').join(',') : '';
+
+    // Fetch the order items
+    const itemsResult = orderIds.length > 0 ? await pool.query(
+      `
+      SELECT oq.order_id, oq.menu_id, oq.order_quantity, mi.name as menu_name
+      FROM order_quantities oq
+      JOIN menu_items mi ON oq.menu_id = mi.menu_id
+      WHERE oq.order_id IN (${orderIdsPlaceholders});
+      `,
+      orderIds
+    ) : [];
+
+    // Fetch the reservations if available
+    const reservationIds = rows.map(order => order.reservation_id).filter(Boolean);
+    const reservationIdsPlaceholders = reservationIds.length > 0 ? reservationIds.map(() => '?').join(',') : '';
+    const reservationResult = reservationIds.length > 0 ? await pool.query(
+      `
+      SELECT r.reservation_id, r.reservation_date, r.reservation_time
+      FROM reservations r
+      WHERE r.reservation_id IN (${reservationIdsPlaceholders});
+      `,
+      reservationIds
+    ) : [];
+
+    // Group orders with their respective items and reservation details
+    const groupedOrders = rows.map(order => {
+      const orderItems = itemsResult[0].filter(item => item.order_id === order.order_id);
+      const reservationDetails = order.reservation_id
+        ? reservationResult[0].find(r => r.reservation_id === order.reservation_id)
+        : null;
+
+      return {
+        order_id: order.order_id,
+        user_id: order.user_id,
+        date: order.date,
+        time: order.time,
+        total_amount: parseFloat(order.total_amount),
+        mop: order.mop,
+        delivery: order.delivery,
+        orderType: order.order_type,
+        reservation_id: order.reservation_id,
+        status: order.status,
+        customerName: order.customer_name,
+        numberOfPeople: order.number_of_people,
+        firstName: order.first_name,
+        lastName: order.last_name,
+        email: order.email,
+        phone: order.phone,
+        address: order.address,
+        reservation_date: reservationDetails ? reservationDetails.reservation_date : null,
+        reservation_time: reservationDetails ? reservationDetails.reservation_time : null,
+        items: orderItems,
+      };
+    });
+
+    res.json(groupedOrders);
+  } catch (error) {
+    console.error("Error fetching order history:", error.message);
+    res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
+  }
+});
 
 
 app.post('/api/feedback', async (req, res) => {
@@ -132,11 +227,7 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
 
   // Define URLs based on user_id
   const successUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/successful' : `http://localhost:5173/successpage?session_id=${randomId}`;
-<<<<<<< HEAD
-  const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : 'http://localhost:5173/';
-=======
   const cancelUrl = user_id === 14 ? 'http://localhost:5173/admin/pos/failed' : `http://localhost:5173/successpage?session_id=${randomId}`;
->>>>>>> 443d98e (Your commit message)
 
   try {
       const response = await axios.post(
@@ -176,20 +267,12 @@ app.post('/api/create-gcash-checkout-session', async (req, res) => {
 
           // UPSERT query for MySQL
           const query = `
-<<<<<<< HEAD
-              INSERT INTO payment (user_id, session_id, payment_status)
-              VALUES (?, ?, ?)
-              ON DUPLICATE KEY UPDATE 
-                  session_id = VALUES(session_id),
-                  payment_status = VALUES(payment_status);
-=======
             INSERT INTO payment (user_id, session_id, payment_status)
 VALUES (?, ?, ?)
 ON DUPLICATE KEY UPDATE 
     session_id = VALUES(session_id),
     payment_status = VALUES(payment_status);
 
->>>>>>> 443d98e (Your commit message)
           `;
           const values = [user_id, randomId, 'pending'];
 
@@ -215,6 +298,182 @@ ON DUPLICATE KEY UPDATE
 
 
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Test route
@@ -413,10 +672,6 @@ app.post('/api/web-orders', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 443d98e (Your commit message)
 app.post('/api/orders', async (req, res) => {
   const client = await pool.getConnection(); // Get a client from the pool
   try {
@@ -725,6 +980,8 @@ app.get('/api/order-history', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch order history. Please try again later.' });
   }
 });
+
+
 
 
 

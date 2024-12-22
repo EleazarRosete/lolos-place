@@ -60,10 +60,6 @@ const LandingPage = () => {
         const data = await response.json();
         
         if (response.ok) {
-<<<<<<< HEAD
-          console.log('Top Sellers:', data); // Debugging line
-=======
->>>>>>> 443d98e (Your commit message)
           setTopSellers(data.data); // Access the 'data' field
         } else {
           console.error('Error fetching top sellers:', data.message);
