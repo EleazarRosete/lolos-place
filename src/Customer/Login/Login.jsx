@@ -44,14 +44,9 @@ const LoginPage = () => {
       });
 
       if (response.status === 200) {
-        if (identifier === 'lolos-place@gmail.com') {
-          navigate('/admin'); // Redirect to admin dashboard if the identifier matches
-        }
-        else{
-          const customer = response.data.data; // Adjust according to your API response structure
-          setCustomer(customer); // Set customer context with the logged-in user
-          navigate('/', { replace: true }); // Redirect to home
-        }
+        const customer = response.data.data; // Adjust according to your API response structure
+        setCustomer(customer); // Set customer context with the logged-in user
+        navigate('/', { replace: true }); // Redirect to home
       } else if (response.status === 401) {
         alert(`Invalid credentials`);
       } else if (response.status === 404) {
